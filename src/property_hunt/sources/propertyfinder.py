@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import json
+import re
+from typing import Any, Iterable
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-from property_hunt.models import Listing, SourceDiagnostic
+from property_hunt.models import Listing, Provenance, SourceDiagnostic
 from .base import FetchResult, SourceAdapter, unsupported
 from .portal_common import extract_links, extract_sitemap_locs, parse_jsonld_listing
 
@@ -10,12 +13,131 @@ from .portal_common import extract_links, extract_sitemap_locs, parse_jsonld_lis
 SITEMAP_INDEX = "https://www.propertyfinder.ae/sitemaps/index-sitemap.xml"
 
 
+def _walk(value: Any) -> Iterable[dict[str, Any]]:
+    if isinstance(value, dict):
+        yield value
+        for child in value.values():
+            yield from _walk(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from _walk(child)
+
+
+def _number(value: Any) -> float | None:
+    if isinstance(value, dict):
+        value = value.get("value")
+    if isinstance(value, (int, float)):
+        return float(value)
+    if value is None:
+        return None
+    match = re.search(r"[0-9][0-9,]*(?:\.[0-9]+)?", str(value))
+    return float(match.group(0).replace(",", "")) if match else None
+
+
+def _embedded_json_blocks(payload: bytes) -> Iterable[Any]:
+    text = payload.decode("utf-8", errors="ignore")
+    for block in re.findall(r"<script\b[^>]*>(.*?)</script>", text, re.I | re.S):
+        candidate = block.strip()
+        if not candidate or candidate[0] not in "[{":
+            continue
+        try:
+            yield json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+
+
+def parse_embedded_listings(payload: bytes, page_url: str) -> list[Listing]:
+    """Parse Property Finder listing objects embedded in application state.
+
+    Current PF search pages serialize listing objects with stable semantic fields
+    such as id/share_url/price/location/size. This path is intentionally independent
+    of CSS selectors and complements JSON-LD detail parsing.
+    """
+    out: list[Listing] = []
+    seen: set[str] = set()
+    for data in _embedded_json_blocks(payload):
+        for item in _walk(data):
+            share_url = item.get("share_url") or item.get("shareUrl") or item.get("url")
+            if not isinstance(share_url, str):
+                continue
+            if "propertyfinder.ae" not in share_url or "/plp/buy/" not in share_url:
+                continue
+
+            property_type = str(item.get("property_type") or item.get("propertyType") or "").lower()
+            if property_type and "apartment" not in property_type:
+                continue
+
+            sid_raw = item.get("id") or item.get("listing_id") or item.get("listingId")
+            if sid_raw is None:
+                match = re.search(r"-(\d+)\.html(?:\?|$)", share_url)
+                sid_raw = match.group(1) if match else None
+            if sid_raw is None:
+                continue
+            sid = str(sid_raw)
+            key = f"propertyfinder:{sid}"
+            if key in seen:
+                continue
+
+            price = _number(item.get("price"))
+            size = _number(item.get("size") or item.get("area"))
+            bedrooms_raw = item.get("bedrooms")
+            bathrooms_raw = item.get("bathrooms")
+            bedrooms = 0 if str(bedrooms_raw).lower() == "studio" else _number(bedrooms_raw)
+            bathrooms = _number(bathrooms_raw)
+            if price is None or size is None or bedrooms is None:
+                continue
+
+            location = item.get("location") or {}
+            if isinstance(location, dict):
+                full_name = str(
+                    location.get("full_name")
+                    or location.get("fullName")
+                    or location.get("name")
+                    or ""
+                )
+            else:
+                full_name = str(location)
+            parts = [part.strip() for part in full_name.split(",") if part.strip()]
+            building = parts[0] if parts else str(item.get("title") or "Unknown")
+            community_parts = [p for p in parts[1:] if p.lower() != "dubai"]
+            community = ", ".join(community_parts) or None
+
+            seen.add(key)
+            out.append(
+                Listing(
+                    id=key,
+                    source="propertyfinder",
+                    source_id=sid,
+                    title=str(item.get("title") or ""),
+                    url=share_url,
+                    price_aed=price,
+                    area_sqft=size,
+                    bedrooms=int(bedrooms),
+                    bathrooms=bathrooms,
+                    building_name=building,
+                    community=community,
+                    property_type="apartment",
+                    provenance=Provenance(
+                        source="propertyfinder",
+                        source_id=sid,
+                        url=share_url,
+                        method="embedded-application-state",
+                    ),
+                )
+            )
+    return out
+
+
 class PropertyFinderAdapter(SourceAdapter[Listing]):
     name = "propertyfinder"
 
     @staticmethod
     def parse(payload: bytes, url: str = "fixture://propertyfinder") -> list[Listing]:
-        return parse_jsonld_listing(payload, "propertyfinder", url)
+        records = parse_jsonld_listing(payload, "propertyfinder", url)
+        by_id = {record.id: record for record in records}
+        for record in parse_embedded_listings(payload, url):
+            by_id[record.id] = record
+        return list(by_id.values())
 
     @staticmethod
     def _page_url(start_url: str, page: int) -> str:
@@ -38,12 +160,11 @@ class PropertyFinderAdapter(SourceAdapter[Listing]):
         }
         try:
             index = await self.request(SITEMAP_INDEX)
-            child_maps = [u for u in extract_sitemap_locs(index) if "/buy-" in u][:2]
-            for child in child_maps:
+            child_maps = extract_sitemap_locs(index)
+            # Be permissive about PF sitemap naming: names have changed over time.
+            likely_buy_maps = [u for u in child_maps if "buy" in u.lower()] or child_maps
+            for child in likely_buy_maps[:8]:
                 urls = extract_sitemap_locs(await self.request(child))
-                # Property Finder's buy sitemap contains property detail URLs across
-                # residential property types. Do not require the literal word
-                # "apartment" in the URL; current detail URLs do not guarantee it.
                 listing_urls = [u for u in urls if "/plp/buy/" in u]
                 details["sitemap_files"] += 1
                 details["sitemap_urls"] += len(listing_urls)
@@ -64,10 +185,7 @@ class PropertyFinderAdapter(SourceAdapter[Listing]):
                                 continue
                             parsed = self.parse(payload, detail_url)
                         for listing in parsed:
-                            # The configured hunt is apartments. Sitemap files are
-                            # broader, so enforce the type after parsing instead of
-                            # incorrectly assuming it is encoded in every URL.
-                            if "apartment" not in listing.title.lower():
+                            if listing.property_type.lower() != "apartment" and "apartment" not in listing.title.lower():
                                 continue
                             records[listing.id] = listing
                     except Exception:
