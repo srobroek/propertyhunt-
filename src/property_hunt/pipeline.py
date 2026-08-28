@@ -99,12 +99,10 @@ def normalize_records(listings: list[Listing], txns: list[Transaction], cfg: Hun
 
 
 def _merge_first_seen(previous: list[Listing], current: list[Listing]) -> list[Listing]:
-    old = {x.id: x for x in previous}
-    merged: list[Listing] = []
+    merged = {x.id: x for x in previous}
     for listing in current:
-        prior = old.get(listing.id)
-        merged.append(prior if prior is not None else listing)
-    return merged
+        merged.setdefault(listing.id, listing)
+    return sorted(merged.values(), key=lambda x: x.id)
 
 
 def _observations(listings: list[Listing]) -> list[Observation]:
