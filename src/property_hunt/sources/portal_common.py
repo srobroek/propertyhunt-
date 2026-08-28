@@ -5,6 +5,7 @@ import json
 import re
 from typing import Any, Iterable
 from urllib.parse import urljoin
+from xml.etree import ElementTree
 
 from property_hunt.models import Listing, Provenance
 
@@ -43,6 +44,22 @@ def extract_links(payload: bytes, base_url: str, patterns: tuple[str, ...]) -> l
             seen.add(url)
             links.append(url)
     return links
+
+
+def extract_sitemap_locs(payload: bytes) -> list[str]:
+    """Return <loc> values from either a sitemap index or urlset."""
+    try:
+        root = ElementTree.fromstring(payload)
+    except ElementTree.ParseError:
+        return []
+    out: list[str] = []
+    for element in root.iter():
+        if element.tag.rsplit("}", 1)[-1] != "loc" or not element.text:
+            continue
+        value = element.text.strip()
+        if value:
+            out.append(value)
+    return out
 
 
 def _number(value: Any) -> float | None:
