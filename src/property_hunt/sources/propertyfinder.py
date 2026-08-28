@@ -26,18 +26,28 @@ class PropertyFinderAdapter(SourceAdapter[Listing]):
         query["page"] = str(page)
         return urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment))
 
-    async def _sitemap_fallback(self, allow_browser: bool, target_records: int = 50) -> tuple[list[Listing], dict]:
+    async def _sitemap_fallback(
+        self, allow_browser: bool, target_records: int = 50
+    ) -> tuple[list[Listing], dict]:
         records: dict[str, Listing] = {}
-        details = {"sitemap_files": 0, "sitemap_urls": 0, "detail_attempts": 0, "detail_challenges": 0}
+        details = {
+            "sitemap_files": 0,
+            "sitemap_urls": 0,
+            "detail_attempts": 0,
+            "detail_challenges": 0,
+        }
         try:
             index = await self.request(SITEMAP_INDEX)
             child_maps = [u for u in extract_sitemap_locs(index) if "/buy-" in u][:2]
             for child in child_maps:
                 urls = extract_sitemap_locs(await self.request(child))
-                listing_urls = [u for u in urls if "/plp/buy/" in u and "apartment" in u.lower()]
+                # Property Finder's buy sitemap contains property detail URLs across
+                # residential property types. Do not require the literal word
+                # "apartment" in the URL; current detail URLs do not guarantee it.
+                listing_urls = [u for u in urls if "/plp/buy/" in u]
                 details["sitemap_files"] += 1
                 details["sitemap_urls"] += len(listing_urls)
-                for detail_url in listing_urls[:100]:
+                for detail_url in listing_urls[:150]:
                     if len(records) >= target_records or details["detail_challenges"] >= 3:
                         break
                     details["detail_attempts"] += 1
@@ -54,6 +64,11 @@ class PropertyFinderAdapter(SourceAdapter[Listing]):
                                 continue
                             parsed = self.parse(payload, detail_url)
                         for listing in parsed:
+                            # The configured hunt is apartments. Sitemap files are
+                            # broader, so enforce the type after parsing instead of
+                            # incorrectly assuming it is encoded in every URL.
+                            if "apartment" not in listing.title.lower():
+                                continue
                             records[listing.id] = listing
                     except Exception:
                         continue
@@ -86,7 +101,9 @@ class PropertyFinderAdapter(SourceAdapter[Listing]):
                     break
                 for listing in parsed_index:
                     records[listing.id] = listing
-                for detail_url in extract_links(payload, page_url, (r"/en/plp/(?:buy|rent)/[^?#]+",)):
+                for detail_url in extract_links(
+                    payload, page_url, (r"/en/plp/(?:buy|rent)/[^?#]+",)
+                ):
                     try:
                         detail = await self.request(detail_url)
                         parsed = self.parse(detail, detail_url)
@@ -95,7 +112,16 @@ class PropertyFinderAdapter(SourceAdapter[Listing]):
                     except Exception:
                         continue
             except Exception as exc:
-                diagnostics.append(SourceDiagnostic(source=self.name, status="partial", message=str(exc), pages=page_number - 1, records=len(records), partial=True))
+                diagnostics.append(
+                    SourceDiagnostic(
+                        source=self.name,
+                        status="partial",
+                        message=str(exc),
+                        pages=page_number - 1,
+                        records=len(records),
+                        partial=True,
+                    )
+                )
                 break
 
         sitemap_details = {}
@@ -105,6 +131,24 @@ class PropertyFinderAdapter(SourceAdapter[Listing]):
 
         if not diagnostics:
             status = "ok" if records else "partial"
-            message = "public search/detail pages parsed" if records and not challenged else "search challenged; published sitemap fallback used"
-            diagnostics.append(SourceDiagnostic(source=self.name, status=status, message=message, records=len(records), pages=max_pages if not challenged else 0, partial=not bool(records), details=sitemap_details))
-        return FetchResult(records=list(records.values()), diagnostics=diagnostics, complete=bool(records) and not any(d.partial for d in diagnostics))
+            message = (
+                "public search/detail pages parsed"
+                if records and not challenged
+                else "search challenged; published sitemap fallback used"
+            )
+            diagnostics.append(
+                SourceDiagnostic(
+                    source=self.name,
+                    status=status,
+                    message=message,
+                    records=len(records),
+                    pages=max_pages if not challenged else 0,
+                    partial=not bool(records),
+                    details=sitemap_details,
+                )
+            )
+        return FetchResult(
+            records=list(records.values()),
+            diagnostics=diagnostics,
+            complete=bool(records) and not any(d.partial for d in diagnostics),
+        )
