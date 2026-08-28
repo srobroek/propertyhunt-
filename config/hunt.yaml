@@ -15,23 +15,28 @@ sources:
     start_url: https://dubai.dubizzle.com/property-for-sale/residential/apartment/
     max_pages: 1
 
-  # DLD current-year surfaces. Keep disabled until a stable official export URL is
-  # configured; the public search forms are CAPTCHA-gated.
+  # DLD is the authoritative official source. These direct public surfaces are
+  # queried on every run. Current-year transaction/rent filtering is CAPTCHA-gated;
+  # adapters therefore report partial rather than fabricating or bypassing results.
   dld:
-    enabled: false
-    mode: official-csv
-    url: null
+    enabled: true
+    mode: official-direct
+    url: https://dubailand.gov.ae/en/open-data/real-estate-data/
   dld_rents:
-    enabled: false
-    mode: official-ejari-csv
-    url: null
+    enabled: true
+    mode: official-direct
+    url: https://dubailand.gov.ae/en/open-data/real-estate-data/
   dld_projects:
-    enabled: false
-    mode: official-project-csv
-    url: null
+    enabled: true
+    mode: official-project-status
+    url: https://backoffice.dubailand.gov.ae/en/eservices/real-estate-project-status-landing/real-estate-project-status
 
-  # Dubai Pulse is DLD's official historical/open-data backend. Implementation is
-  # ready but remains disabled until OAuth credentials or approved CSV resources are configured.
+  # New Data Dubai and legacy Dubai Pulse remain implemented/known but disabled
+  # until their machine-access model is verified and/or credentials are available.
+  data_dubai:
+    enabled: false
+    mode: disabled
+    url: https://data.dubai/en/
   dubai_pulse_transactions:
     enabled: false
     mode: oauth-api-or-csv
@@ -64,7 +69,7 @@ sources:
   emirates_auction:
     enabled: true
     mode: public-auction-pages
-    start_url: https://www.emiratesauction.com/auction-calendar
+    start_url: https://www.emiratesauction.com/properties
     max_pages: 1
 
 http:
