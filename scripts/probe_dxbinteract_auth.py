@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-import random
 import re
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -167,11 +166,6 @@ def _write_probe(payload: dict[str, object]) -> None:
 
 
 async def main() -> None:
-    if os.getenv("GITHUB_EVENT_NAME") == "schedule":
-        delay = random.SystemRandom().randint(0, 1800)
-        print(f"Scheduled scraper jitter: {delay}s")
-        await asyncio.sleep(delay)
-
     username = os.getenv("DXBINTERACT_USERNAME")
     password = os.getenv("DXBINTERACT_PASSWORD")
     if not username or not password:
