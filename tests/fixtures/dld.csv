@@ -1,0 +1,3 @@
+transaction_id,building_name,area_name,transaction_date,price_aed,area_sqft,bedrooms
+T1,Marina Pinnacle,Dubai Marina,2026-08-01,1300000,755,1
+T2,Tiger Tower,Dubai Marina,2026-07-15,1280000,770,1

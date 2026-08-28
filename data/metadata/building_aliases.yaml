@@ -1,0 +1,4 @@
+aliases:
+  marina pinnacle: {canonical: marina-pinnacle, name: Marina Pinnacle, community: Dubai Marina}
+  tiger tower: {canonical: marina-pinnacle, name: Marina Pinnacle, community: Dubai Marina}
+  burj khalifa tower: {canonical: burj-khalifa, name: Burj Khalifa, community: Downtown Dubai}
