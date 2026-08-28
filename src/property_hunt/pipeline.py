@@ -124,6 +124,40 @@ def _observations(listings: list[Listing]) -> list[Observation]:
     return out
 
 
+def _historical_listing_valid(listing: Listing, cfg: HuntConfig) -> bool:
+    """Reject known category/search-page records accidentally persisted as listings.
+
+    Search-page observations are valid when deliberately parsed from rendered cards,
+    but a generic JSON-LD object whose URL is exactly the configured source landing
+    page is not a property listing.
+    """
+    settings = cfg.sources.get(listing.source) or {}
+    start_url = settings.get("start_url") or settings.get("url")
+    provenance = listing.provenance
+    if not start_url or provenance is None:
+        return True
+    if provenance.method != "json-ld":
+        return True
+    return listing.url.rstrip("/") != str(start_url).rstrip("/")
+
+
+def _listing_snapshot_partial(listings: list[Listing], diags: list[Any]) -> bool:
+    if listings:
+        return False
+    listing_diags = [d for d in diags if d.source != "dld"]
+    return bool(listing_diags) and any(d.partial for d in listing_diags)
+
+
+def _transaction_snapshot_partial(txns: list[Transaction], diags: list[Any], cfg: HuntConfig) -> bool:
+    if txns:
+        return False
+    dld_enabled = bool((cfg.sources.get("dld") or {}).get("enabled", False))
+    if not dld_enabled:
+        return True
+    dld_diags = [d for d in diags if d.source == "dld"]
+    return bool(dld_diags) and any(d.partial for d in dld_diags)
+
+
 async def run_pipeline(
     config_path="config/hunt.yaml",
     sources=None,
@@ -140,13 +174,28 @@ async def run_pipeline(
     state = base / "data/state"
     reports = base / "reports"
 
-    previous = read_models(state / "listings.parquet", Listing)
-    previous_first_seen = read_models(state / "first_seen.parquet", Listing)
+    raw_previous = read_models(state / "listings.parquet", Listing)
+    raw_first_seen = read_models(state / "first_seen.parquet", Listing)
+    previous_transactions = read_models(state / "transactions.parquet", Transaction)
     previous_observations = read_models(state / "observations.parquet", Observation)
-    events = detect_events(previous, listings)
 
-    write_models(state / "listings.parquet", listings, Listing)
-    write_models(state / "transactions.parquet", txns, Transaction)
+    previous = [x for x in raw_previous if _historical_listing_valid(x, cfg)]
+    previous_first_seen = [x for x in raw_first_seen if _historical_listing_valid(x, cfg)]
+    invalid_historical_ids = {x.id for x in raw_previous if x not in previous}
+    invalid_historical_ids.update(x.id for x in raw_first_seen if x not in previous_first_seen)
+    previous_observations = [
+        x for x in previous_observations if x.listing_id not in invalid_historical_ids
+    ]
+
+    preserve_listing_snapshot = _listing_snapshot_partial(listings, diags)
+    preserve_transaction_snapshot = _transaction_snapshot_partial(txns, diags, cfg)
+
+    effective_listings = previous if preserve_listing_snapshot else listings
+    effective_txns = previous_transactions if preserve_transaction_snapshot else txns
+    events = [] if preserve_listing_snapshot else detect_events(previous, listings)
+
+    write_models(state / "listings.parquet", effective_listings, Listing)
+    write_models(state / "transactions.parquet", effective_txns, Transaction)
     write_models(
         state / "observations.parquet",
         previous_observations + _observations(listings),
@@ -177,7 +226,7 @@ async def run_pipeline(
             exclusions["ambiguous_building"] += 1
             continue
 
-        evidence, stats = select_comparables(listing, txns)
+        evidence, stats = select_comparables(listing, effective_txns)
         score = score_listing(listing, stats["weighted_psf"], uw, cfg.scoring_weights)
         candidates.append(
             {
@@ -199,19 +248,39 @@ async def run_pipeline(
         )
 
     candidates.sort(key=lambda x: (-x["score"], x["id"]))
+    warnings: list[str] = []
+    if preserve_listing_snapshot:
+        warnings.append(
+            "Listing sources were partial with zero current records; preserved the last valid listing snapshot and suppressed removal events."
+        )
+    if preserve_transaction_snapshot:
+        warnings.append(
+            "No fresh transaction source was available; preserved the last valid transaction snapshot."
+        )
+    if invalid_historical_ids:
+        warnings.append(
+            f"Removed {len(invalid_historical_ids)} invalid historical category/search-page listing record(s)."
+        )
+
     payload = {
         "run_id": datetime.now(timezone.utc).isoformat(),
         "counts": {
             "collected_listings": len(listings),
+            "state_listings": len(effective_listings),
             "transactions": len(txns),
+            "state_transactions": len(effective_txns),
             "ambiguous": len(ambiguous),
             "candidates": len(candidates),
             "events": len(events),
         },
+        "snapshot": {
+            "listing_snapshot_preserved": preserve_listing_snapshot,
+            "transaction_snapshot_preserved": preserve_transaction_snapshot,
+        },
         "diagnostics": [d.model_dump(mode="json") for d in diags],
         "exclusions": exclusions,
         "candidates": candidates,
-        "warnings": [],
+        "warnings": warnings,
     }
     generate_report(payload, reports, date.today())
     return payload
