@@ -12,7 +12,7 @@ sources:
   dubizzle:
     enabled: true
     mode: http-browser
-    start_url: https://dubai.dubizzle.com/en/property-for-sale/residential/apartment/
+    start_url: https://dubai.dubizzle.com/property-for-sale/residential/apartment/
     max_pages: 10
   dld:
     enabled: false
