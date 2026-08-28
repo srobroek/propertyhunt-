@@ -1,4 +1,3 @@
-from dateutil import parser as dtparser
 from datetime import date
 from pathlib import Path
 
@@ -8,7 +7,7 @@ from property_hunt.cli import app
 from property_hunt.comps import select_comparables
 from property_hunt.config import load_config
 from property_hunt.matching import group_duplicates, group_layouts
-from property_hunt.models import Listing, Provenance
+from property_hunt.models import Listing, Observation, Provenance
 from property_hunt.normalize import BuildingCanonicalizer, normalize_name
 from property_hunt.pipeline import _merge_first_seen, _observations
 from property_hunt.sources.dld import DLDAdapter
@@ -116,6 +115,5 @@ def test_cli_fixture_persists_observation_history(tmp_path):
     assert second.exit_code == 0, second.output
     assert (tmp_path / "reports/latest.json").exists()
     assert (tmp_path / "data/state/listings.parquet").exists()
-    from property_hunt.models import Observation
     observations = read_models(tmp_path / "data/state/observations.parquet", Observation)
     assert len(observations) == 2
