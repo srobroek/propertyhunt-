@@ -56,27 +56,32 @@ jobs:
 
           def locs(payload: bytes):
               root = ElementTree.fromstring(payload)
-              return [
-                  node.text.strip()
-                  for node in root.iter()
-                  if node.tag.rsplit('}', 1)[-1] == 'loc' and node.text
-              ]
+              return [node.text.strip() for node in root.iter()
+                      if node.tag.rsplit('}', 1)[-1] == 'loc' and node.text]
 
           with httpx.Client(headers=headers, follow_redirects=True, timeout=20) as client:
               for name, url in endpoints.items():
                   try:
                       r = client.get(url)
-                      snippet = r.text[:240].replace('\n', ' ')
-                      print(f'SITEMAP {name}: status={r.status_code} type={r.headers.get("content-type")} bytes={len(r.content)} snippet={snippet!r}')
+                      print(f'SITEMAP {name}: status={r.status_code} type={r.headers.get("content-type")} bytes={len(r.content)}')
+                      if 'xml' in (r.headers.get('content-type') or '').lower():
+                          found = locs(r.content)
+                          print(f'SITEMAP {name} CHILDREN ({len(found)}): {found}')
+                      else:
+                          print(f'SITEMAP {name} snippet={r.text[:240].replace(chr(10), " ")!r}')
                   except Exception as exc:
                       print(f'SITEMAP {name}: ERROR {exc}')
 
-              try:
-                  child = client.get('https://www.propertyfinder.ae/sitemaps/buy-0.xml')
-                  urls = locs(child.content)
-                  print(f'PF BUY-0: status={child.status_code} urls={len(urls)} first={urls[:12]}')
-              except Exception as exc:
-                  print(f'PF BUY-0 ERROR: {exc}')
+              for probe in [
+                  'https://www.propertyfinder.ae/sitemaps/buy-0.xml',
+                  'https://www.bayut.com/lpv-sale-sitemap.xml',
+              ]:
+                  try:
+                      r = client.get(probe)
+                      found = locs(r.content) if 'xml' in (r.headers.get('content-type') or '').lower() else []
+                      print(f'CHILD {probe}: status={r.status_code} urls={len(found)} first={found[:20]}')
+                  except Exception as exc:
+                      print(f'CHILD {probe}: ERROR {exc}')
           PY
 
       - name: Validate deterministic pipeline
