@@ -1,16 +1,16 @@
 {
-  "run_id": "2026-08-28T13:49:33.461938+00:00",
+  "run_id": "2026-08-28T13:52:47.794213+00:00",
   "counts": {
-    "collected_listings": 4,
+    "collected_listings": 0,
     "state_listings": 4,
     "transactions": 0,
     "state_transactions": 0,
     "ambiguous": 0,
     "candidates": 0,
-    "events": 4
+    "events": 0
   },
   "snapshot": {
-    "listing_snapshot_preserved": false,
+    "listing_snapshot_preserved": true,
     "transaction_snapshot_preserved": true
   },
   "diagnostics": [
@@ -47,31 +47,31 @@
     },
     {
       "source": "dubizzle",
-      "status": "ok",
+      "status": "partial",
       "message": "public search/detail pages parsed",
-      "records": 4,
+      "records": 0,
       "pages": 1,
       "attempts": 0,
-      "partial": false,
+      "partial": true,
       "details": {
-        "detail_links_seen": 2,
-        "detail_pages_parsed": 2,
+        "detail_links_seen": 0,
+        "detail_pages_parsed": 0,
         "browser_index_pages": 1,
-        "search_cards_parsed": 2,
+        "search_cards_parsed": 0,
         "rejected_category_jsonld": 1,
-        "rendered_aed_markers": 2,
-        "rendered_sqft_markers": 3
+        "rendered_aed_markers": 0,
+        "rendered_sqft_markers": 0
       }
     }
   ],
   "exclusions": {
     "bedrooms": 0,
     "all_in_ceiling": 0,
-    "ambiguous_building": 4
+    "ambiguous_building": 0
   },
   "candidates": [],
   "warnings": [
-    "No fresh transaction source was available; preserved the last valid transaction snapshot.",
-    "Removed 1 invalid historical category/search-page listing record(s)."
+    "Listing sources were partial with zero current records; preserved the last valid listing snapshot and suppressed removal events.",
+    "No fresh transaction source was available; preserved the last valid transaction snapshot."
   ]
 }
