@@ -2,7 +2,7 @@ sources:
   propertyfinder:
     enabled: true
     mode: http-browser-sitemap
-    start_url: https://www.propertyfinder.ae/en/buy/dubai/apartments-for-sale.html
+    start_url: https://www.propertyfinder.ae/en/buy/dubai/properties-for-sale.html
     max_pages: 1
   bayut:
     enabled: true
