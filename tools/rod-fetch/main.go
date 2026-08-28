@@ -41,16 +41,8 @@ func main() {
 	}
 	defer func() { _ = browser.Close() }()
 
-	page, err := browser.Page(rod.NewPage())
-	if err != nil {
-		log.Fatalf("create page: %v", err)
-	}
-	if err := page.Navigate(*target); err != nil {
-		log.Fatalf("navigate: %v", err)
-	}
-	if err := page.WaitLoad(); err != nil {
-		log.Fatalf("wait load: %v", err)
-	}
+	page := browser.MustPage(*target)
+	page.MustWaitLoad()
 	if *settle > 0 {
 		time.Sleep(*settle)
 	}
