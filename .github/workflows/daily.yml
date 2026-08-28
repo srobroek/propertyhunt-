@@ -1,6 +1,8 @@
 name: daily-property-hunt
 
 on:
+  push:
+    branches: [main]
   schedule:
     - cron: '0 3 * * *' # 07:00 UAE / 03:00 UTC; scheduled runs add 0-30m jitter
   workflow_dispatch:
