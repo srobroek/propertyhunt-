@@ -1,5 +1,5 @@
 {
-  "run_id": "2026-08-28T14:24:20.461891+00:00",
+  "run_id": "2026-08-28T14:29:01.813226+00:00",
   "counts": {
     "collected_listings": 0,
     "state_listings": 4,
@@ -63,10 +63,40 @@
         "detail_pages_parsed": 0,
         "browser_index_pages": 1,
         "search_cards_parsed": 0,
-        "rejected_category_jsonld": 0,
+        "rejected_category_jsonld": 1,
         "rendered_aed_markers": 0,
         "rendered_sqft_markers": 0
       }
+    },
+    {
+      "source": "dld",
+      "status": "partial",
+      "message": "official DLD transaction CSV parsed",
+      "records": 0,
+      "pages": 1,
+      "attempts": 1,
+      "partial": true,
+      "details": {}
+    },
+    {
+      "source": "dld_rents",
+      "status": "partial",
+      "message": "registered rent data parsed",
+      "records": 0,
+      "pages": 1,
+      "attempts": 1,
+      "partial": true,
+      "details": {}
+    },
+    {
+      "source": "dld_projects",
+      "status": "partial",
+      "message": "DLD project data parsed",
+      "records": 0,
+      "pages": 1,
+      "attempts": 1,
+      "partial": true,
+      "details": {}
     },
     {
       "source": "dxbinteract",

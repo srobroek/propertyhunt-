@@ -20,6 +20,9 @@
 - **propertyfinder** — partial: search challenged; published sitemap fallback used (0 records)
 - **bayut** — partial: search challenged; published detail sitemap fallback yielded no records (0 records)
 - **dubizzle** — partial: public search/detail pages parsed (0 records)
+- **dld** — partial: official DLD transaction CSV parsed (0 records)
+- **dld_rents** — partial: registered rent data parsed (0 records)
+- **dld_projects** — partial: DLD project data parsed (0 records)
 - **dxbinteract** — ok: public DXBinteract market report parsed (1 records)
 - **emirates_auction** — partial: public Emirates Auction property inventory parsed (0 records)
 
