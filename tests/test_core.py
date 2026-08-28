@@ -55,7 +55,7 @@ def test_propertyfinder_embedded_application_state():
         "bathrooms": "2",
         "size": {"value": 760, "unit": "sqft"},
         "share_url": "https://www.propertyfinder.ae/en/plp/buy/apartment-for-sale-dubai-dubai-marina-marina-pinnacle-13695167.html"
-      }]}}
+      }]}
     }</script></html>'''
     records = PropertyFinderAdapter.parse(payload, "https://www.propertyfinder.ae/en/buy/dubai/properties-for-sale.html")
     assert len(records) == 1
