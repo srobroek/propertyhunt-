@@ -9,6 +9,17 @@ from urllib.parse import urljoin
 from property_hunt.models import Listing, Provenance
 
 
+LISTING_TYPES = {
+    "Product",
+    "Apartment",
+    "Residence",
+    "RealEstateListing",
+    "House",
+    "Accommodation",
+    "SingleFamilyResidence",
+}
+
+
 def _walk(value: Any) -> Iterable[dict[str, Any]]:
     if isinstance(value, dict):
         yield value
@@ -43,6 +54,14 @@ def _number(value: Any) -> float | None:
     return float(match.group(0).replace(",", "")) if match else None
 
 
+def _is_listing_type(value: Any) -> bool:
+    if isinstance(value, str):
+        return value in LISTING_TYPES
+    if isinstance(value, list):
+        return any(isinstance(item, str) and item in LISTING_TYPES for item in value)
+    return False
+
+
 def parse_jsonld_listing(payload: bytes, source: str, url: str) -> list[Listing]:
     text = payload.decode("utf-8", errors="ignore")
     blocks = re.findall(
@@ -60,26 +79,27 @@ def parse_jsonld_listing(payload: bytes, source: str, url: str) -> list[Listing]
             continue
 
         for item in _walk(data):
-            item_type = item.get("@type")
-            if item_type not in {
-                "Product",
-                "Apartment",
-                "Residence",
-                "RealEstateListing",
-                "House",
-                "Accommodation",
-                "SingleFamilyResidence",
-            }:
+            if not _is_listing_type(item.get("@type")):
                 continue
 
             offer = item.get("offers") or {}
             if isinstance(offer, list):
                 offer = offer[0] if offer else {}
+            if not isinstance(offer, dict):
+                offer = {}
+
             floor = item.get("floorSize") or {}
+            if not isinstance(floor, dict):
+                floor = {"value": floor}
             address = item.get("address") or {}
             if isinstance(address, str):
                 address = {"streetAddress": address}
+            if not isinstance(address, dict):
+                address = {}
+
             additional = item.get("additionalProperty") or []
+            if not isinstance(additional, list):
+                additional = [additional]
             props = {
                 str(p.get("name", "")).strip().lower(): p.get("value")
                 for p in additional
