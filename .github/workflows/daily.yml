@@ -76,12 +76,22 @@ jobs:
         run: |
           python scripts/validate_artifacts.py .
           git diff --check
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('reports/latest.json').read_text())
+          counts = report.get('counts', {})
+          if counts.get('collected_listings', 0) <= 0:
+              diagnostics = report.get('diagnostics', [])
+              raise SystemExit(f"live collection produced zero listings: {diagnostics}")
+          PY
 
       - name: Persist daily state and reports
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data reports
+          git add data reports go.mod
+          if [ -f go.sum ]; then git add go.sum; fi
           if git diff --cached --quiet; then
             echo 'No generated data/report changes to commit.'
             exit 0
