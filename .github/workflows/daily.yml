@@ -1,6 +1,8 @@
 name: daily-property-hunt
 
 on:
+  push:
+    branches: [main] # temporary full-pipeline verification trigger
   schedule:
     - cron: '0 3 * * *' # 07:00 UAE / 03:00 UTC
   workflow_dispatch:
@@ -10,7 +12,7 @@ permissions:
 
 concurrency:
   group: daily-property-hunt
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   collect:
@@ -41,6 +43,7 @@ jobs:
 
       - name: Validate deterministic pipeline
         run: |
+          python -m compileall -q src tests scripts
           ruff check src tests scripts
           pytest --cov=property_hunt --cov-report=term-missing
           property-hunt run \
@@ -76,6 +79,11 @@ jobs:
               'live run: '
               f"collected={counts.get('collected_listings', 0)} "
               f"state={counts.get('state_listings', 0)} "
+              f"transactions={counts.get('transactions', 0)} "
+              f"rents={counts.get('rents', 0)} "
+              f"projects={counts.get('projects', 0)} "
+              f"auctions={counts.get('auctions', 0)} "
+              f"market_metrics={counts.get('market_metrics', 0)} "
               f"snapshot_preserved={snapshot.get('listing_snapshot_preserved', False)}"
           )
           for diagnostic in report['diagnostics']:
