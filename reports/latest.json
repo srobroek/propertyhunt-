@@ -1,11 +1,17 @@
 {
-  "run_id": "2026-08-28T13:39:06.881714+00:00",
+  "run_id": "2026-08-28T13:49:33.461938+00:00",
   "counts": {
-    "collected_listings": 1,
+    "collected_listings": 4,
+    "state_listings": 4,
     "transactions": 0,
+    "state_transactions": 0,
     "ambiguous": 0,
     "candidates": 0,
-    "events": 1
+    "events": 4
+  },
+  "snapshot": {
+    "listing_snapshot_preserved": false,
+    "transaction_snapshot_preserved": true
   },
   "diagnostics": [
     {
@@ -26,36 +32,46 @@
     {
       "source": "bayut",
       "status": "partial",
-      "message": "access challenge detected",
+      "message": "search challenged; published detail sitemap fallback yielded no records",
       "records": 0,
       "pages": 0,
       "attempts": 0,
       "partial": true,
-      "details": {}
+      "details": {
+        "sitemap_files": 1,
+        "sitemap_urls": 49000,
+        "detail_attempts": 3,
+        "detail_challenges": 3,
+        "non_dubai_rejected": 0
+      }
     },
     {
       "source": "dubizzle",
       "status": "ok",
       "message": "public search/detail pages parsed",
-      "records": 1,
+      "records": 4,
       "pages": 1,
       "attempts": 0,
       "partial": false,
       "details": {
-        "detail_links_seen": 0,
-        "detail_pages_parsed": 0,
+        "detail_links_seen": 2,
+        "detail_pages_parsed": 2,
         "browser_index_pages": 1,
-        "search_cards_parsed": 0,
-        "rendered_aed_markers": 0,
-        "rendered_sqft_markers": 1
+        "search_cards_parsed": 2,
+        "rejected_category_jsonld": 1,
+        "rendered_aed_markers": 2,
+        "rendered_sqft_markers": 3
       }
     }
   ],
   "exclusions": {
     "bedrooms": 0,
-    "all_in_ceiling": 1,
-    "ambiguous_building": 0
+    "all_in_ceiling": 0,
+    "ambiguous_building": 4
   },
   "candidates": [],
-  "warnings": []
+  "warnings": [
+    "No fresh transaction source was available; preserved the last valid transaction snapshot.",
+    "Removed 1 invalid historical category/search-page listing record(s)."
+  ]
 }
