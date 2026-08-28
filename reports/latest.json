@@ -1,5 +1,5 @@
 {
-  "run_id": "2026-08-28T14:21:45.362660+00:00",
+  "run_id": "2026-08-28T14:24:20.461891+00:00",
   "counts": {
     "collected_listings": 0,
     "state_listings": 4,
@@ -8,7 +8,7 @@
     "rents": 0,
     "projects": 0,
     "auctions": 0,
-    "market_metrics": 0,
+    "market_metrics": 1,
     "registry_entities": 0,
     "ambiguous": 0,
     "candidates": 0,
@@ -63,20 +63,23 @@
         "detail_pages_parsed": 0,
         "browser_index_pages": 1,
         "search_cards_parsed": 0,
-        "rejected_category_jsonld": 1,
+        "rejected_category_jsonld": 0,
         "rendered_aed_markers": 0,
         "rendered_sqft_markers": 0
       }
     },
     {
       "source": "dxbinteract",
-      "status": "partial",
-      "message": "dxbinteract request failed after bounded retries: Client error '403 Forbidden' for url 'https://dxbinteract.com/market-reports/2026/Q2'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
-      "records": 0,
-      "pages": 0,
-      "attempts": 0,
-      "partial": true,
-      "details": {}
+      "status": "ok",
+      "message": "public DXBinteract market report parsed",
+      "records": 1,
+      "pages": 1,
+      "attempts": 2,
+      "partial": false,
+      "details": {
+        "role": "secondary aggregate market evidence",
+        "url": "https://dxbinteract.com/market-reports/2026/Q2"
+      }
     },
     {
       "source": "emirates_auction",
