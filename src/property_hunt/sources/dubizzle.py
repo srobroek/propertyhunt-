@@ -10,6 +10,9 @@ from .base import FetchResult, SourceAdapter, unsupported
 from .portal_common import extract_links, parse_jsonld_listing
 
 
+DETAIL_PATTERN = r"/property-for-sale/residential/apartment/\d{4}/\d{1,2}/\d{1,2}/[^?#]+"
+
+
 class DubizzleAdapter(SourceAdapter[Listing]):
     name = "dubizzle"
 
@@ -53,9 +56,6 @@ class DubizzleAdapter(SourceAdapter[Listing]):
         bedrooms = 0 if studio and beds_match is None else int(beds_match.group(1)) if beds_match else 0
         bathrooms = float(baths_match.group(1)) if baths_match else None
 
-        # On Dubizzle detail pages the location is rendered after the headline metrics
-        # and before the H1 title. Bound extraction to that section to avoid pulling
-        # description/agency text into the canonical location.
         location = ""
         if title:
             title_pos = text.find(title)
@@ -69,11 +69,15 @@ class DubizzleAdapter(SourceAdapter[Listing]):
                 )
                 location = " ".join(location.split()).strip(" ,-|")
         if not location:
-            loc_match = re.search(
-                r"(?:Location|Map View)\s+(.+?)(?:\s+#?\s*" + re.escape(title) + r"|\s+Type\s)",
-                text,
-                flags=re.I,
-            ) if title else None
+            loc_match = (
+                re.search(
+                    r"(?:Location|Map View)\s+(.+?)(?:\s+#?\s*" + re.escape(title) + r"|\s+Type\s)",
+                    text,
+                    flags=re.I,
+                )
+                if title
+                else None
+            )
             if loc_match:
                 location = " ".join(loc_match.group(1).split()).strip(" ,-|")
 
@@ -116,12 +120,15 @@ class DubizzleAdapter(SourceAdapter[Listing]):
         diagnostics: list[SourceDiagnostic] = []
         detail_links_seen = 0
         detail_pages_parsed = 0
+        browser_index_pages = 0
+
         for page_number in range(1, max_pages + 1):
             page_url = self._page_url(str(start_url), page_number)
             try:
                 payload = await self.request(page_url)
                 if self.challenge_detected(payload) and allow_browser:
                     payload = await self.browser_request(page_url)
+                    browser_index_pages += 1
                 if self.challenge_detected(payload):
                     diagnostics.append(
                         SourceDiagnostic(
@@ -135,14 +142,23 @@ class DubizzleAdapter(SourceAdapter[Listing]):
                     )
                     break
 
-                for listing in parse_jsonld_listing(payload, self.name, page_url):
+                index_records = parse_jsonld_listing(payload, self.name, page_url)
+                detail_links = extract_links(payload, page_url, (DETAIL_PATTERN,))
+
+                # Dubizzle serves a usable shell over HTTP but hydrates the listing
+                # cards client-side. Render that ordinary public page when HTTP has
+                # neither records nor detail links.
+                if not index_records and not detail_links and allow_browser:
+                    rendered = await self.browser_request(page_url)
+                    browser_index_pages += 1
+                    if not self.challenge_detected(rendered):
+                        payload = rendered
+                        index_records = parse_jsonld_listing(payload, self.name, page_url)
+                        detail_links = extract_links(payload, page_url, (DETAIL_PATTERN,))
+
+                for listing in index_records:
                     records[listing.id] = listing
 
-                detail_links = extract_links(
-                    payload,
-                    page_url,
-                    (r"/property-for-sale/residential/apartment/\d{4}/\d{1,2}/\d{1,2}/[^?#]+",),
-                )
                 detail_links_seen += len(detail_links)
                 for detail_url in detail_links:
                     try:
@@ -173,6 +189,7 @@ class DubizzleAdapter(SourceAdapter[Listing]):
                         details={
                             "detail_links_seen": detail_links_seen,
                             "detail_pages_parsed": detail_pages_parsed,
+                            "browser_index_pages": browser_index_pages,
                         },
                     )
                 )
@@ -190,6 +207,7 @@ class DubizzleAdapter(SourceAdapter[Listing]):
                     details={
                         "detail_links_seen": detail_links_seen,
                         "detail_pages_parsed": detail_pages_parsed,
+                        "browser_index_pages": browser_index_pages,
                     },
                 )
             )
