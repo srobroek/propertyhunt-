@@ -1,10 +1,8 @@
 name: daily-property-hunt
 
 on:
-  push:
-    branches: [main] # temporary full-pipeline verification trigger
   schedule:
-    - cron: '0 3 * * *' # 07:00 UAE / 03:00 UTC
+    - cron: '0 3 * * *' # 07:00 UAE / 03:00 UTC; scheduled runs add 0-30m jitter
   workflow_dispatch:
 
 permissions:
@@ -12,7 +10,7 @@ permissions:
 
 concurrency:
   group: daily-property-hunt
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   collect:
