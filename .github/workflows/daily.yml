@@ -1,23 +1,39 @@
-name: daily-property-hunt-validation
+name: property-hunt-validation
+
 on:
-  schedule: [{cron: '0 3 * * *'}] # 07:00 GST (UTC+4)
   workflow_dispatch:
-permissions: {contents: read}
-concurrency: {group: daily-property-hunt, cancel-in-progress: false}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: property-hunt-validation
+  cancel-in-progress: false
+
 jobs:
-  run:
+  validate:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-        with: {fetch-depth: 0}
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
-        with: {python-version: '3.12', cache: pip}
+        with:
+          python-version: '3.12'
+          cache: pip
       - run: pip install -e '.[dev]'
       - run: pytest
-      # Scheduled automation is deterministic validation only. Live collection is
-      # intentionally run by a local Codex agent after reviewing source access.
-      - run: property-hunt run --config config/hunt.yaml --fixture-dir tests/fixtures --output-dir /tmp/property-hunt --no-browser --verbose
+      - run: ruff check src tests scripts
+      - run: mypy src/property_hunt
+      - name: Deterministic fixture smoke test
+        run: >-
+          property-hunt run
+          --config config/hunt.yaml
+          --fixture-dir tests/fixtures
+          --output-dir /tmp/property-hunt
+          --no-browser
+          --verbose
       - name: Validate artifacts
         run: python scripts/validate_artifacts.py /tmp/property-hunt
       - name: Upload validated fixture artifacts
