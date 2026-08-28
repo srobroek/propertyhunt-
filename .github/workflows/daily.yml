@@ -54,7 +54,15 @@ jobs:
             --verbose
           python scripts/validate_artifacts.py /tmp/property-hunt-check
 
+      - name: Randomize scheduled scraper start
+        if: github.event_name == 'schedule'
+        run: |
+          DELAY_SECONDS=$(( RANDOM % 1801 ))
+          echo "Scheduled scraper jitter: ${DELAY_SECONDS}s"
+          sleep "$DELAY_SECONDS"
+
       - name: Probe authenticated DXBinteract structure
+        continue-on-error: true
         env:
           DXBINTERACT_USERNAME: ${{ secrets.DXBINTERACT_USERNAME }}
           DXBINTERACT_PASSWORD: ${{ secrets.DXBINTERACT_PASSWORD }}
