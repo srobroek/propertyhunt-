@@ -13,9 +13,9 @@ import (
 
 func main() {
 	target := flag.String("url", "", "public page URL to fetch")
-	userAgent := flag.String("user-agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36", "browser user agent")
+	userAgent := flag.String("user-agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36", "browser user agent")
 	chromeBin := flag.String("chrome-bin", os.Getenv("CHROME_BIN"), "Chromium/Chrome executable")
-	settle := flag.Duration("settle", 1500*time.Millisecond, "extra render settle time")
+	settle := flag.Duration("settle", 5*time.Second, "extra render settle time")
 	flag.Parse()
 
 	if *target == "" {
@@ -46,6 +46,9 @@ func main() {
 	if *settle > 0 {
 		time.Sleep(*settle)
 	}
+	// Trigger ordinary lazy/hydrated content that appears after the initial viewport.
+	_, _ = page.Eval(`() => window.scrollTo(0, Math.min(document.body.scrollHeight, 2400))`)
+	time.Sleep(750 * time.Millisecond)
 
 	html, err := page.HTML()
 	if err != nil {
