@@ -14,17 +14,58 @@ sources:
     mode: http-browser
     start_url: https://dubai.dubizzle.com/property-for-sale/residential/apartment/
     max_pages: 1
+
+  # DLD current-year surfaces. Keep disabled until a stable official export URL is
+  # configured; the public search forms are CAPTCHA-gated.
   dld:
     enabled: false
-    mode: csv
+    mode: official-csv
     url: null
-    note: Current-year official export requires interactive form/captcha; enable when an approved export URL or file is supplied.
+  dld_rents:
+    enabled: false
+    mode: official-ejari-csv
+    url: null
+  dld_projects:
+    enabled: false
+    mode: official-project-csv
+    url: null
+
+  # Dubai Pulse is DLD's official historical/open-data backend. Implementation is
+  # ready but remains disabled until OAuth credentials or approved CSV resources are configured.
+  dubai_pulse_transactions:
+    enabled: false
+    mode: oauth-api-or-csv
+    url: null
+    limit: 1000
+  dubai_pulse_rents:
+    enabled: false
+    mode: oauth-api-or-csv
+    url: null
+    limit: 1000
+  dubai_pulse_projects:
+    enabled: false
+    mode: oauth-api-or-csv
+    url: null
+    limit: 1000
+  dubai_pulse_registry:
+    enabled: false
+    mode: oauth-api
+    entity_type: building
+    limit: 1000
+
+  # Secondary aggregate market context; never supersedes DLD transaction evidence.
   dxbinteract:
-    enabled: false
-    mode: unsupported
+    enabled: true
+    mode: public-market-report
+    start_url: https://dxbinteract.com/market-reports/2026/Q2
+    max_pages: 1
+
+  # Public auction inventory used as a distress/motivated-sale signal source.
   emirates_auction:
-    enabled: false
-    mode: unsupported
+    enabled: true
+    mode: public-auction-pages
+    start_url: https://www.emiratesauction.com/auction-calendar
+    max_pages: 1
 
 http:
   timeout_seconds: 20
