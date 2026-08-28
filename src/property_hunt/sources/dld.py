@@ -57,6 +57,14 @@ def _csv_rows(payload: bytes) -> list[dict[str, str]]:
     return [_row(row) for row in csv.DictReader(io.StringIO(text))]
 
 
+def _looks_like_csv(payload: bytes) -> bool:
+    head = payload[:4096].decode("utf-8-sig", errors="ignore").lstrip().lower()
+    if head.startswith("<!doctype html") or head.startswith("<html"):
+        return False
+    first_line = head.splitlines()[0] if head.splitlines() else ""
+    return "," in first_line
+
+
 def _area_sqft(row: dict[str, str]) -> float | None:
     sqft = _float(_first(row, "area_sqft", "property_size_sqft", "transaction_size_sqft"))
     if sqft and sqft > 0:
@@ -87,14 +95,25 @@ def _bedrooms(row: dict[str, str]) -> int | None:
     return _int(raw)
 
 
+def _gated(source: str, message: str, url: str) -> FetchResult:
+    return FetchResult(
+        complete=False,
+        diagnostics=[
+            SourceDiagnostic(
+                source=source,
+                status="query-gated",
+                message=message,
+                records=0,
+                pages=1,
+                attempts=1,
+                partial=True,
+                details={"url": url, "reachable": True, "requires_query": True},
+            )
+        ],
+    )
+
+
 class DLDAdapter(SourceAdapter[Transaction]):
-    """DLD transaction CSV parser.
-
-    Accepts both the compact test schema and the official DLD/Dubai Pulse column
-    naming conventions. Current-year DLD pages may require an interactive CAPTCHA;
-    historical/bulk ingestion is handled by the Dubai Pulse adapters.
-    """
-
     name = "dld"
 
     @staticmethod
@@ -105,74 +124,27 @@ class DLDAdapter(SourceAdapter[Transaction]):
             tx_date = _date(_first(row, "transaction_date", "instance_date", "procedure_date"))
             price = _float(_first(row, "price_aed", "amount", "actual_worth", "worth"))
             area = _area_sqft(row)
-            building = _first(
-                row,
-                "building_name",
-                "project_name_en",
-                "project_name",
-                "project",
-                "master_project_en",
-                "master_project",
-            )
+            building = _first(row, "building_name", "project_name_en", "project_name", "project", "master_project_en", "master_project")
             community = _first(row, "area_name", "area_name_en", "community")
             if not (tx_date and price and price > 0 and area and area > 0 and building):
                 continue
             sid = sid or f"{tx_date.isoformat()}-{len(out) + 1}"
-            property_type = (
-                _first(row, "property_sub_type_en", "property_type", "property_type_en") or "apartment"
-            ).lower()
-            out.append(
-                Transaction(
-                    id=f"dld:{sid}",
-                    building_name=building,
-                    community=community,
-                    transaction_date=tx_date,
-                    price_aed=price,
-                    area_sqft=area,
-                    bedrooms=_bedrooms(row),
-                    property_type=property_type,
-                    provenance=Provenance(
-                        source="dld",
-                        source_id=sid,
-                        url=url if url.startswith("http") else None,
-                        method="official-open-data-csv",
-                    ),
-                )
-            )
+            property_type = (_first(row, "property_sub_type_en", "property_type", "property_type_en") or "apartment").lower()
+            out.append(Transaction(id=f"dld:{sid}", building_name=building, community=community, transaction_date=tx_date, price_aed=price, area_sqft=area, bedrooms=_bedrooms(row), property_type=property_type, provenance=Provenance(source="dld", source_id=sid, url=url if url.startswith("http") else None, method="official-open-data-csv")))
         return out
 
     async def fetch(self, **kwargs: object) -> FetchResult[Transaction]:
         url = kwargs.get("url")
         if not url:
-            return unsupported(
-                self.name,
-                "Current-year DLD transaction search is interactive; configure an official CSV/API export or Dubai Pulse source.",
-            )
+            return unsupported(self.name, "No official DLD source configured")
         try:
             payload = await self.request(str(url))
+            if not _looks_like_csv(payload):
+                return _gated(self.name, "official DLD transaction page reachable; current rows require the public date/CAPTCHA query or an export/API URL", str(url))
             records = self.parse(payload, str(url))
-            return FetchResult(
-                records=records,
-                diagnostics=[
-                    SourceDiagnostic(
-                        source=self.name,
-                        status="ok" if records else "partial",
-                        message="official DLD transaction CSV parsed",
-                        records=len(records),
-                        pages=1,
-                        attempts=1,
-                        partial=not bool(records),
-                    )
-                ],
-                complete=bool(records),
-            )
+            return FetchResult(records=records, diagnostics=[SourceDiagnostic(source=self.name, status="ok" if records else "partial", message="official DLD transaction CSV parsed", records=len(records), pages=1, attempts=1, partial=not bool(records))], complete=bool(records))
         except Exception as exc:
-            return FetchResult(
-                complete=False,
-                diagnostics=[
-                    SourceDiagnostic(source=self.name, status="partial", message=str(exc), partial=True)
-                ],
-            )
+            return FetchResult(complete=False, diagnostics=[SourceDiagnostic(source=self.name, status="partial", message=str(exc), partial=True)])
 
 
 class DLDRentAdapter(SourceAdapter[RentalRecord]):
@@ -185,62 +157,25 @@ class DLDRentAdapter(SourceAdapter[RentalRecord]):
             annual = _float(_first(row, "annual_amount", "annual_rent_aed", "contract_amount"))
             area = _area_sqft(row)
             building = _first(row, "building_name", "project_name_en", "project_name", "project")
-            contract_date = _date(
-                _first(row, "registration_date", "contract_start_date", "start_date", "contract_date")
-            )
+            contract_date = _date(_first(row, "registration_date", "contract_start_date", "start_date", "contract_date"))
             if not (annual and annual > 0 and building):
                 continue
             sid = _first(row, "contract_id", "ejari_id", "registration_number") or f"rent-{len(out)+1}"
-            out.append(
-                RentalRecord(
-                    id=f"dld-rent:{sid}",
-                    building_name=building,
-                    community=_first(row, "area_name", "area_name_en", "community"),
-                    annual_rent_aed=annual,
-                    area_sqft=area,
-                    bedrooms=_bedrooms(row),
-                    contract_date=contract_date,
-                    property_type=(
-                        _first(row, "property_sub_type_en", "property_type", "property_type_en")
-                        or "apartment"
-                    ).lower(),
-                    registered=True,
-                    provenance=Provenance(
-                        source="dld",
-                        source_id=sid,
-                        url=url if url.startswith("http") else None,
-                        method="official-ejari-open-data",
-                    ),
-                )
-            )
+            out.append(RentalRecord(id=f"dld-rent:{sid}", building_name=building, community=_first(row, "area_name", "area_name_en", "community"), annual_rent_aed=annual, area_sqft=area, bedrooms=_bedrooms(row), contract_date=contract_date, property_type=(_first(row, "property_sub_type_en", "property_type", "property_type_en") or "apartment").lower(), registered=True, provenance=Provenance(source="dld", source_id=sid, url=url if url.startswith("http") else None, method="official-ejari-open-data")))
         return out
 
     async def fetch(self, **kwargs: object) -> FetchResult[RentalRecord]:
         url = kwargs.get("url")
         if not url:
-            return unsupported(self.name, "Configure DLD/Dubai Pulse rent CSV or API endpoint")
+            return unsupported(self.name, "No official DLD rent source configured")
         try:
-            records = self.parse(await self.request(str(url)), str(url))
-            return FetchResult(
-                records=records,
-                diagnostics=[
-                    SourceDiagnostic(
-                        source=self.name,
-                        status="ok" if records else "partial",
-                        message="registered rent data parsed",
-                        records=len(records),
-                        pages=1,
-                        attempts=1,
-                        partial=not bool(records),
-                    )
-                ],
-                complete=bool(records),
-            )
+            payload = await self.request(str(url))
+            if not _looks_like_csv(payload):
+                return _gated(self.name, "official DLD rent page reachable; current Ejari rows require the public date/CAPTCHA query or an export/API URL", str(url))
+            records = self.parse(payload, str(url))
+            return FetchResult(records=records, diagnostics=[SourceDiagnostic(source=self.name, status="ok" if records else "partial", message="registered DLD rent CSV parsed", records=len(records), pages=1, attempts=1, partial=not bool(records))], complete=bool(records))
         except Exception as exc:
-            return FetchResult(
-                complete=False,
-                diagnostics=[SourceDiagnostic(source=self.name, status="partial", message=str(exc), partial=True)],
-            )
+            return FetchResult(complete=False, diagnostics=[SourceDiagnostic(source=self.name, status="partial", message=str(exc), partial=True)])
 
 
 class DLDProjectAdapter(SourceAdapter[Project]):
@@ -255,52 +190,18 @@ class DLDProjectAdapter(SourceAdapter[Project]):
                 continue
             sid = _first(row, "project_number", "project_id", "property_id") or str(len(out) + 1)
             completion = _float(_first(row, "completed", "completed_percent", "completion_percent", "completed_%"))
-            out.append(
-                Project(
-                    id=f"dld-project:{sid}",
-                    name=name,
-                    developer=_first(row, "developer_name", "developer_name_en"),
-                    community=_first(row, "area", "area_name", "area_name_en"),
-                    status=_first(row, "project_status", "project_status_en", "status"),
-                    start_date=_date(_first(row, "start_date")),
-                    advertised_end_date=_date(_first(row, "end_date")),
-                    completion_percent=completion,
-                    inspection_date=_date(_first(row, "inspection_date")),
-                    completion_date=_date(_first(row, "completion_date")),
-                    total_units=_int(_first(row, "total_units", "units")),
-                    provenance=Provenance(
-                        source="dld",
-                        source_id=sid,
-                        url=url if url.startswith("http") else None,
-                        method="official-project-open-data",
-                    ),
-                )
-            )
+            out.append(Project(id=f"dld-project:{sid}", name=name, developer=_first(row, "developer_name", "developer_name_en"), community=_first(row, "area", "area_name", "area_name_en"), status=_first(row, "project_status", "project_status_en", "status"), start_date=_date(_first(row, "start_date")), advertised_end_date=_date(_first(row, "end_date")), completion_percent=completion, inspection_date=_date(_first(row, "inspection_date")), completion_date=_date(_first(row, "completion_date")), total_units=_int(_first(row, "total_units", "units")), provenance=Provenance(source="dld", source_id=sid, url=url if url.startswith("http") else None, method="official-project-open-data")))
         return out
 
     async def fetch(self, **kwargs: object) -> FetchResult[Project]:
         url = kwargs.get("url")
         if not url:
-            return unsupported(self.name, "Configure DLD/Dubai Pulse project CSV or API endpoint")
+            return unsupported(self.name, "No official DLD project source configured")
         try:
-            records = self.parse(await self.request(str(url)), str(url))
-            return FetchResult(
-                records=records,
-                diagnostics=[
-                    SourceDiagnostic(
-                        source=self.name,
-                        status="ok" if records else "partial",
-                        message="DLD project data parsed",
-                        records=len(records),
-                        pages=1,
-                        attempts=1,
-                        partial=not bool(records),
-                    )
-                ],
-                complete=bool(records),
-            )
+            payload = await self.request(str(url))
+            if not _looks_like_csv(payload):
+                return _gated(self.name, "official DLD project-status page reachable; project records require a project-name/number query or official export", str(url))
+            records = self.parse(payload, str(url))
+            return FetchResult(records=records, diagnostics=[SourceDiagnostic(source=self.name, status="ok" if records else "partial", message="DLD project CSV parsed", records=len(records), pages=1, attempts=1, partial=not bool(records))], complete=bool(records))
         except Exception as exc:
-            return FetchResult(
-                complete=False,
-                diagnostics=[SourceDiagnostic(source=self.name, status="partial", message=str(exc), partial=True)],
-            )
+            return FetchResult(complete=False, diagnostics=[SourceDiagnostic(source=self.name, status="partial", message=str(exc), partial=True)])
