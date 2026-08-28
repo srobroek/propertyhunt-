@@ -5,6 +5,7 @@ import hashlib
 import os
 import time
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
 import httpx
@@ -14,6 +15,32 @@ from property_hunt.config import HTTPConfig
 from property_hunt.models import SourceDiagnostic
 
 T = TypeVar("T")
+
+
+@dataclass(frozen=True)
+class BrowserProfile:
+    """Ordinary browser/session settings that should remain internally consistent.
+
+    Hardware/GPU/WebDriver values are deliberately not overridden. The browser
+    reports the real values of the GitHub runner rather than synthetic fingerprint
+    attributes.
+    """
+
+    name: str
+    languages: tuple[str, ...]
+    timezone: str
+    window_width: int
+    window_height: int
+    browser_class: str = "desktop"
+
+
+GITHUB_DESKTOP_PROFILE = BrowserProfile(
+    name="GitHub Chrome desktop",
+    languages=("en-US", "en"),
+    timezone="Asia/Dubai",
+    window_width=1920,
+    window_height=1080,
+)
 
 
 class Page(BaseModel, Generic[T]):
@@ -32,12 +59,13 @@ class SourceAdapter(ABC, Generic[T]):
 
     def __init__(self, http: HTTPConfig, client: httpx.AsyncClient | None = None):
         self.policy = http
+        self.browser_profile = GITHUB_DESKTOP_PROFILE
         self.client = client or httpx.AsyncClient(
             timeout=http.timeout_seconds,
             follow_redirects=True,
             headers={
                 "User-Agent": http.user_agent,
-                "Accept-Language": "en-US,en;q=0.9",
+                "Accept-Language": ",".join(self.browser_profile.languages),
                 "Accept": "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
             },
         )
@@ -98,20 +126,21 @@ class SourceAdapter(ABC, Generic[T]):
     async def _nodriver_request(self, url: str) -> bytes | None:
         """Render a public page with nodriver and the runner's installed Chrome.
 
-        This uses nodriver's normal browser defaults plus ordinary browser/session
-        configuration. It does not invoke CAPTCHA/challenge solving helpers,
-        fingerprint-spoofing hooks, or explicit access-control bypasses.
+        The browser keeps its native UA, platform, WebDriver/hardware/GPU values,
+        while ordinary session settings such as language and window dimensions are
+        made consistent. CAPTCHA/challenge helpers and fingerprint overrides are
+        not invoked.
         """
         try:
             import nodriver as uc
         except ImportError:
             return None
 
+        profile = self.browser_profile
         if self._nodriver_browser is None:
             chrome_bin = os.getenv("CHROME_BIN") or None
             browser_args = [
-                f"--user-agent={self.policy.user_agent}",
-                "--window-size=1440,1000",
+                f"--window-size={profile.window_width},{profile.window_height}",
                 "--disable-dev-shm-usage",
             ]
             try:
@@ -119,7 +148,7 @@ class SourceAdapter(ABC, Generic[T]):
                     headless=False,
                     browser_executable_path=chrome_bin,
                     browser_args=browser_args,
-                    lang="en-US",
+                    lang=profile.languages[0],
                     expert=False,
                 )
             except Exception:
@@ -128,6 +157,13 @@ class SourceAdapter(ABC, Generic[T]):
 
         try:
             page = await self._nodriver_browser.get(url)
+            try:
+                await page.send(
+                    uc.cdp.emulation.set_timezone_override(timezone_id=profile.timezone)
+                )
+            except Exception:
+                # Timezone override is compatibility polish, not required to render.
+                pass
             await page.sleep(1.5)
             html = await page.get_content()
             return html.encode("utf-8") if html else None
@@ -145,6 +181,7 @@ class SourceAdapter(ABC, Generic[T]):
         except ImportError as exc:
             raise RuntimeError("browser fallback requires property-hunt[browser]") from exc
 
+        profile = self.browser_profile
         async with async_playwright() as playwright:
             launch_kwargs: dict[str, object] = {"headless": True}
             chrome_bin = os.getenv("CHROME_BIN")
@@ -152,10 +189,9 @@ class SourceAdapter(ABC, Generic[T]):
                 launch_kwargs["executable_path"] = chrome_bin
             browser = await playwright.chromium.launch(**launch_kwargs)
             context = await browser.new_context(
-                user_agent=self.policy.user_agent,
-                locale="en-US",
-                timezone_id="Asia/Dubai",
-                viewport={"width": 1440, "height": 1000},
+                locale=profile.languages[0],
+                timezone_id=profile.timezone,
+                viewport={"width": profile.window_width, "height": profile.window_height},
             )
             page = await context.new_page()
             try:
