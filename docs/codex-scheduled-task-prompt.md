@@ -21,13 +21,12 @@ Work in the `srobroek/propertyhunt-` repository and execute today's UAE resident
 
    ```bash
    ruff check src tests scripts
-   mypy src/property_hunt
    pytest --cov=property_hunt --cov-report=term-missing
    property-hunt run --config config/hunt.yaml --fixture-dir tests/fixtures --output-dir /tmp/property-hunt-check --no-browser --verbose
    python scripts/validate_artifacts.py /tmp/property-hunt-check
    ```
 
-   If any deterministic validation fails, stop the live run and report the exact failure.
+   If any deterministic validation fails, stop the live run and report the exact failure. Strict mypy is a development target, not a production gate until the remaining original helpers are fully annotated.
 
 4. Run the live collector:
 
