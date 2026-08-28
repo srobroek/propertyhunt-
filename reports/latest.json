@@ -1,5 +1,5 @@
 {
-  "run_id": "2026-08-28T15:09:35.854326+00:00",
+  "run_id": "2026-08-28T15:11:30.626287+00:00",
   "counts": {
     "collected_listings": 0,
     "state_listings": 4,
@@ -28,7 +28,7 @@
       "attempts": 0,
       "partial": true,
       "details": {
-        "sitemap_files": 1,
+        "sitemap_files": 8,
         "sitemap_urls": 0,
         "detail_attempts": 0,
         "detail_challenges": 0
