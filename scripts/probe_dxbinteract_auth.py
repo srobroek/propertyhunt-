@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import random
 import re
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -10,6 +11,7 @@ from urllib.parse import urlsplit
 from playwright.async_api import Locator, Page, async_playwright
 
 OUT = Path("diagnostics/dxbinteract-auth-probe.json")
+REPORT_COPY = Path("reports/dxbinteract-auth-probe.json")
 PROBE_URLS = [
     "https://dxbinteract.com/area-analysis/al-karama",
     "https://dxbinteract.com/dubai-property-prices",
@@ -192,6 +194,11 @@ async def _authenticate(page: Page, username: str, password: str) -> dict[str, o
 
 
 async def main() -> None:
+    if os.getenv("GITHUB_EVENT_NAME") == "schedule":
+        delay = random.SystemRandom().randint(0, 1800)
+        print(f"Scheduled scraper jitter: {delay}s")
+        await asyncio.sleep(delay)
+
     username = os.getenv("DXBINTERACT_USERNAME")
     password = os.getenv("DXBINTERACT_PASSWORD")
     if not username or not password:
@@ -199,6 +206,7 @@ async def main() -> None:
 
     chrome_bin = os.getenv("CHROME_BIN") or None
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    REPORT_COPY.parent.mkdir(parents=True, exist_ok=True)
 
     async with async_playwright() as playwright:
         browser = await playwright.chromium.launch(
@@ -231,7 +239,9 @@ async def main() -> None:
             "auth": auth,
             "pages": pages,
         }
-        OUT.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        rendered = json.dumps(payload, indent=2)
+        OUT.write_text(rendered, encoding="utf-8")
+        REPORT_COPY.write_text(rendered, encoding="utf-8")
         print(
             "DXB auth probe: "
             f"submitted={auth['submitted']} success_signal={auth['success_signal']} "
