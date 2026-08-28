@@ -45,12 +45,23 @@ jobs:
         run: |
           python - <<'PY'
           import httpx
+          from xml.etree import ElementTree
+
           endpoints = {
               'propertyfinder': 'https://www.propertyfinder.ae/sitemaps/index-sitemap.xml',
               'bayut': 'https://www.bayut.com/sitemap_index.xml',
               'dubizzle': 'https://dubai.dubizzle.com/sitemaps/sitemap.xml',
           }
           headers = {'User-Agent': 'Mozilla/5.0 (compatible; property-hunt-sitemap-check/1.0)'}
+
+          def locs(payload: bytes):
+              root = ElementTree.fromstring(payload)
+              return [
+                  node.text.strip()
+                  for node in root.iter()
+                  if node.tag.rsplit('}', 1)[-1] == 'loc' and node.text
+              ]
+
           with httpx.Client(headers=headers, follow_redirects=True, timeout=20) as client:
               for name, url in endpoints.items():
                   try:
@@ -59,6 +70,13 @@ jobs:
                       print(f'SITEMAP {name}: status={r.status_code} type={r.headers.get("content-type")} bytes={len(r.content)} snippet={snippet!r}')
                   except Exception as exc:
                       print(f'SITEMAP {name}: ERROR {exc}')
+
+              try:
+                  child = client.get('https://www.propertyfinder.ae/sitemaps/buy-0.xml')
+                  urls = locs(child.content)
+                  print(f'PF BUY-0: status={child.status_code} urls={len(urls)} first={urls[:12]}')
+              except Exception as exc:
+                  print(f'PF BUY-0 ERROR: {exc}')
           PY
 
       - name: Validate deterministic pipeline
