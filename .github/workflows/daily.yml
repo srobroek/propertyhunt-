@@ -53,6 +53,26 @@ jobs:
           "$CHROME_BIN" --version
           ./bin/rod-fetch --help >/dev/null
 
+      - name: Probe published sitemap endpoints
+        run: |
+          python - <<'PY'
+          import httpx
+          endpoints = {
+              'propertyfinder': 'https://www.propertyfinder.ae/sitemaps/index-sitemap.xml',
+              'bayut': 'https://www.bayut.com/sitemap_index.xml',
+              'dubizzle': 'https://dubai.dubizzle.com/sitemaps/sitemap.xml',
+          }
+          headers = {'User-Agent': 'Mozilla/5.0 (compatible; property-hunt-sitemap-check/1.0)'}
+          with httpx.Client(headers=headers, follow_redirects=True, timeout=20) as client:
+              for name, url in endpoints.items():
+                  try:
+                      r = client.get(url)
+                      snippet = r.text[:240].replace('\n', ' ')
+                      print(f'SITEMAP {name}: status={r.status_code} type={r.headers.get("content-type")} bytes={len(r.content)} snippet={snippet!r}')
+                  except Exception as exc:
+                      print(f'SITEMAP {name}: ERROR {exc}')
+          PY
+
       - name: Validate deterministic pipeline
         run: |
           ruff check src tests scripts
