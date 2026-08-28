@@ -3,10 +3,9 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import os
-from pathlib import Path
 import time
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 import httpx
 from pydantic import BaseModel, Field
@@ -44,6 +43,7 @@ class SourceAdapter(ABC, Generic[T]):
         )
         self.cache: dict[str, bytes] = {}
         self._last = 0.0
+        self._nodriver_browser: Any | None = None
 
     async def request(self, url: str) -> bytes:
         if url in self.cache:
@@ -87,54 +87,63 @@ class SourceAdapter(ABC, Generic[T]):
 
     async def close(self) -> None:
         await self.client.aclose()
+        if self._nodriver_browser is not None:
+            try:
+                self._nodriver_browser.stop()
+                await asyncio.sleep(0.1)
+            except Exception:
+                pass
+            self._nodriver_browser = None
 
-    async def _rod_request(self, url: str) -> bytes | None:
-        """Use the bundled Rod helper when it is available."""
-        rod_bin = Path(os.getenv("PROPERTY_HUNT_ROD_BIN", "bin/rod-fetch"))
-        if not rod_bin.is_file():
-            return None
+    async def _nodriver_request(self, url: str) -> bytes | None:
+        """Render a public page with nodriver and the runner's installed Chrome.
 
-        args = [
-            str(rod_bin),
-            "--url",
-            url,
-            "--user-agent",
-            self.policy.user_agent,
-        ]
-        chrome_bin = os.getenv("CHROME_BIN")
-        if chrome_bin:
-            args.extend(["--chrome-bin", chrome_bin])
-
-        proc = await asyncio.create_subprocess_exec(
-            *args,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
+        This uses nodriver's normal browser defaults plus ordinary browser/session
+        configuration. It does not invoke CAPTCHA/challenge solving helpers,
+        fingerprint-spoofing hooks, or explicit access-control bypasses.
+        """
         try:
-            stdout, _stderr = await asyncio.wait_for(
-                proc.communicate(), timeout=self.policy.browser_timeout_seconds + 15
-            )
-        except TimeoutError:
-            proc.kill()
-            await proc.wait()
+            import nodriver as uc
+        except ImportError:
             return None
 
-        if proc.returncode != 0 or not stdout:
+        if self._nodriver_browser is None:
+            chrome_bin = os.getenv("CHROME_BIN") or None
+            browser_args = [
+                f"--user-agent={self.policy.user_agent}",
+                "--window-size=1440,1000",
+                "--disable-dev-shm-usage",
+            ]
+            try:
+                self._nodriver_browser = await uc.start(
+                    headless=False,
+                    browser_executable_path=chrome_bin,
+                    browser_args=browser_args,
+                    lang="en-US",
+                    expert=False,
+                )
+            except Exception:
+                self._nodriver_browser = None
+                return None
+
+        try:
+            page = await self._nodriver_browser.get(url)
+            await page.sleep(1.5)
+            html = await page.get_content()
+            return html.encode("utf-8") if html else None
+        except Exception:
             return None
-        return stdout
 
     async def browser_request(self, url: str) -> bytes:
-        """Fetch rendered public HTML, preferring Rod and falling back to Playwright."""
-        rendered = await self._rod_request(url)
+        """Fetch rendered public HTML, preferring nodriver and falling back to Playwright."""
+        rendered = await self._nodriver_request(url)
         if rendered is not None:
             return rendered
 
         try:
             from playwright.async_api import async_playwright
         except ImportError as exc:
-            raise RuntimeError(
-                "browser fallback requires Rod (`bin/rod-fetch`) or property-hunt[browser]"
-            ) from exc
+            raise RuntimeError("browser fallback requires property-hunt[browser]") from exc
 
         async with async_playwright() as playwright:
             launch_kwargs: dict[str, object] = {"headless": True}
