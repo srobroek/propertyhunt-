@@ -50,9 +50,10 @@ def _structure(html: str, url: str) -> dict[str, object]:
         inputs.append(attrs)
     plain = _clean(re.sub(r"<[^>]+>", " ", html), limit=12000) or ""
     lower = plain.lower()
+    title_match = re.search(r"<title[^>]*>(.*?)</title>", html, re.I | re.S)
     return {
         "url": _safe_url(url),
-        "title": _clean((re.search(r"<title[^>]*>(.*?)</title>", html, re.I | re.S) or [None, None])[1] if re.search(r"<title[^>]*>(.*?)</title>", html, re.I | re.S) else None),
+        "title": _clean(title_match.group(1) if title_match else None),
         "headings": headings,
         "inputs": inputs[:80],
         "table_headers": table_headers,
@@ -170,6 +171,7 @@ async def main() -> None:
         browser_args=["--window-size=1920,1080", "--disable-dev-shm-usage"],
         lang="en-US",
         expert=False,
+        no_sandbox=True,
     )
     try:
         tab = await browser.get(PROBE_URLS[0])
