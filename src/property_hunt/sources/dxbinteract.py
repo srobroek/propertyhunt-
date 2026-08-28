@@ -49,7 +49,7 @@ class DXBInteractAdapter(SourceAdapter[MarketMetric]):
                 re.I,
             ),
             re.compile(
-                r"recorded\s+([0-9,]+)\s+transactions\s+worth\s+AED\s*([0-9.,]+)\s*(billion|million|thousand)?.{0,120}?AED\s*([0-9,]+)\s*(?:per square foot|/sqft)",
+                r"recorded\s+([0-9,]+)\s+transactions\s+worth\s+AED\s*([0-9.,]+)\s*(billion|million|thousand)?.{0,160}?AED\s*([0-9,]+)\s*(?:per square foot|/sqft)",
                 re.I,
             ),
         ]
@@ -84,30 +84,45 @@ class DXBInteractAdapter(SourceAdapter[MarketMetric]):
         allow_browser = bool(kwargs.get("allow_browser", False))
         if not url:
             return unsupported(self.name, "No public DXBinteract market report URL configured")
+
+        direct_error: str | None = None
+        records: list[MarketMetric] = []
+        attempts = 0
         try:
+            attempts += 1
             payload = await self.request(url)
             records = self.parse(payload, url)
-            if not records and allow_browser:
+        except Exception as exc:
+            direct_error = str(exc)
+
+        if not records and allow_browser:
+            try:
+                attempts += 1
                 payload = await self.browser_request(url)
                 records = self.parse(payload, url)
-            return FetchResult(
-                records=records,
-                diagnostics=[
-                    SourceDiagnostic(
-                        source=self.name,
-                        status="ok" if records else "partial",
-                        message="public DXBinteract market report parsed",
-                        records=len(records),
-                        pages=1,
-                        attempts=1,
-                        partial=not bool(records),
-                        details={"role": "secondary aggregate market evidence", "url": url},
-                    )
-                ],
-                complete=bool(records),
-            )
-        except Exception as exc:
-            return FetchResult(
-                complete=False,
-                diagnostics=[SourceDiagnostic(source=self.name, status="partial", message=str(exc), partial=True)],
-            )
+            except Exception as exc:
+                if direct_error:
+                    direct_error = f"direct: {direct_error}; browser: {exc}"
+                else:
+                    direct_error = f"browser: {exc}"
+
+        return FetchResult(
+            records=records,
+            diagnostics=[
+                SourceDiagnostic(
+                    source=self.name,
+                    status="ok" if records else "partial",
+                    message=(
+                        "public DXBinteract market report parsed"
+                        if records
+                        else direct_error or "public report rendered but no supported headline metric was found"
+                    ),
+                    records=len(records),
+                    pages=1,
+                    attempts=attempts,
+                    partial=not bool(records),
+                    details={"role": "secondary aggregate market evidence", "url": url},
+                )
+            ],
+            complete=bool(records),
+        )
