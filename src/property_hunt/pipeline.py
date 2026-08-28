@@ -11,7 +11,9 @@ from property_hunt.models import Listing, Observation, Transaction
 from property_hunt.normalize import BuildingCanonicalizer
 from property_hunt.reporting import generate_report
 from property_hunt.scoring import score_listing
+from property_hunt.sources.bayut import BayutAdapter
 from property_hunt.sources.dld import DLDAdapter
+from property_hunt.sources.dubizzle import DubizzleAdapter
 from property_hunt.sources.propertyfinder import PropertyFinderAdapter
 from property_hunt.storage import append_events, detect_events, read_models, write_models
 from property_hunt.underwriting import underwrite
@@ -39,36 +41,34 @@ async def collect(
         txns = DLDAdapter.parse((fd / "dld.csv").read_bytes())
         return listings, txns, diags
 
-    adapters = {"propertyfinder": PropertyFinderAdapter, "dld": DLDAdapter}
+    adapters = {
+        "propertyfinder": PropertyFinderAdapter,
+        "bayut": BayutAdapter,
+        "dubizzle": DubizzleAdapter,
+        "dld": DLDAdapter,
+    }
+
     for name in wanted:
         settings = cfg.sources.get(name)
         if settings is None:
             raise ValueError(f"unknown source: {name}")
         if not settings.get("enabled", True):
             continue
+        cls = adapters.get(name)
+        if cls is None:
+            raise ValueError(
+                f"enabled source {name!r} has no registered adapter; disable it or register one explicitly"
+            )
 
-        if name in adapters:
-            adapter = adapters[name](cfg.http)
-            try:
-                result = await adapter.fetch(
-                    url=settings.get("url") or settings.get("start_url"),
-                    allow_browser=allow_browser,
-                    max_pages=int(settings.get("max_pages", 5)),
-                )
-            finally:
-                await adapter.close()
-        else:
-            module = __import__(f"property_hunt.sources.{name}", fromlist=["*"])
-            cls = next(v for k, v in vars(module).items() if k.endswith("Adapter"))
-            adapter = cls(cfg.http)
-            try:
-                result = await adapter.fetch(
-                    url=settings.get("url") or settings.get("start_url"),
-                    allow_browser=allow_browser,
-                    max_pages=int(settings.get("max_pages", 5)),
-                )
-            finally:
-                await adapter.close()
+        adapter = cls(cfg.http)
+        try:
+            result = await adapter.fetch(
+                url=settings.get("url") or settings.get("start_url"),
+                allow_browser=allow_browser,
+                max_pages=int(settings.get("max_pages", 5)),
+            )
+        finally:
+            await adapter.close()
 
         diags.extend(result.diagnostics)
         if name == "dld":
