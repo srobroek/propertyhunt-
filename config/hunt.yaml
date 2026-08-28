@@ -1,19 +1,19 @@
 sources:
   propertyfinder:
     enabled: true
-    mode: http-browser
+    mode: http-browser-sitemap
     start_url: https://www.propertyfinder.ae/en/buy/dubai/apartments-for-sale.html
-    max_pages: 10
+    max_pages: 1
   bayut:
     enabled: true
     mode: http-browser
     start_url: https://www.bayut.com/for-sale/apartments/dubai/
-    max_pages: 10
+    max_pages: 1
   dubizzle:
     enabled: true
     mode: http-browser
     start_url: https://dubai.dubizzle.com/property-for-sale/residential/apartment/
-    max_pages: 10
+    max_pages: 1
   dld:
     enabled: false
     mode: csv
