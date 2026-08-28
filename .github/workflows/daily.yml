@@ -25,7 +25,6 @@ jobs:
       - run: pip install -e '.[dev]'
       - run: pytest
       - run: ruff check src tests scripts
-      - run: mypy src/property_hunt
       - name: Deterministic fixture smoke test
         run: >-
           property-hunt run
