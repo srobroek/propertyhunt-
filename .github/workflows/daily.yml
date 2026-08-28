@@ -54,9 +54,20 @@ jobs:
             --verbose
           python scripts/validate_artifacts.py /tmp/property-hunt-check
 
-      - name: Run live collection
+      - name: Probe authenticated DXBinteract structure
+        env:
+          DXBINTERACT_USERNAME: ${{ secrets.DXBINTERACT_USERNAME }}
+          DXBINTERACT_PASSWORD: ${{ secrets.DXBINTERACT_PASSWORD }}
         run: |
-          xvfb-run -a -s '-screen 0 1440x1000x24' \
+          xvfb-run -a -s '-screen 0 1920x1080x24' \
+            python scripts/probe_dxbinteract_auth.py
+
+      - name: Run live collection
+        env:
+          DXBINTERACT_USERNAME: ${{ secrets.DXBINTERACT_USERNAME }}
+          DXBINTERACT_PASSWORD: ${{ secrets.DXBINTERACT_PASSWORD }}
+        run: |
+          xvfb-run -a -s '-screen 0 1920x1080x24' \
             property-hunt run \
               --config config/hunt.yaml \
               --output-dir . \
@@ -114,5 +125,6 @@ jobs:
           path: |
             reports/
             data/state/
+            diagnostics/
           if-no-files-found: warn
           retention-days: 3
