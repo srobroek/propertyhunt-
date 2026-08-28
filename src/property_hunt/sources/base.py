@@ -18,76 +18,23 @@ T = TypeVar("T")
 
 
 @dataclass(frozen=True)
-
-class BrowserFingerprint:
-
+class BrowserProfile:
     name: str
-
-    os: str
-
-    user_agent_family: str
-
-    user_agent: str
-
-    platform: str
-
     languages: tuple[str, ...]
-
     timezone: str
-
-    screen_width: int
-
-    screen_height: int
-
-    color_depth: int
-
-    hardware_concurrency: int
-
-    device_memory_gb: int
-
-    max_touch_points: int
-
-    webdriver: bool
-
-    gpu_class: str
-
-    browser_class: str
+    window_width: int
+    window_height: int
+    browser_class: str = "desktop"
 
 
-
-
-
-
-GITHUB_DESKTOP_PROFILE = BrowserProfile(
-    name="GitHub Chrome desktop",
+REALISTIC_PROFILE = BrowserProfile(
+    name="Windows desktop",
     languages=("en-US", "en"),
-    timezone="Asia/Dubai",
+    timezone="America/New_York",
     window_width=1920,
     window_height=1080,
+    browser_class="desktop",
 )
-REALISTIC_PROFILE = 
-    BrowserProfile(
-        name="Windows desktop",
-        os="Windows 11",
-        user_agent_family="Chrome/Chromium Windows",
-        user_agent=(
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/151.0.0.0 Safari/537.36"
-        ),
-        platform="Win32",
-        languages=("en-US", "en"),
-        timezone="America/New_York",
-        screen_width=1920,
-        screen_height=1080,
-        color_depth=24,
-        hardware_concurrency=8,
-        device_memory_gb=16,
-        max_touch_points=0,
-        webdriver=False,
-        gpu_class="desktop GPU",
-        browser_class="desktop",
-    )
 
 
 class Page(BaseModel, Generic[T]):
@@ -106,7 +53,7 @@ class SourceAdapter(ABC, Generic[T]):
 
     def __init__(self, http: HTTPConfig, client: httpx.AsyncClient | None = None):
         self.policy = http
-        self.browser_profile = GITHUB_DESKTOP_PROFILE
+        self.browser_profile = REALISTIC_PROFILE
         self.client = client or httpx.AsyncClient(
             timeout=http.timeout_seconds,
             follow_redirects=True,
@@ -171,13 +118,7 @@ class SourceAdapter(ABC, Generic[T]):
             self._nodriver_browser = None
 
     async def _nodriver_request(self, url: str) -> bytes | None:
-        """Render a public page with nodriver and the runner's installed Chrome.
-
-        The browser keeps its native UA, platform, WebDriver/hardware/GPU values,
-        while ordinary session settings such as language and window dimensions are
-        made consistent. CAPTCHA/challenge helpers and fingerprint overrides are
-        not invoked.
-        """
+        """Render a public page with nodriver and the runner's installed Chrome."""
         try:
             import nodriver as uc
         except ImportError:
@@ -209,7 +150,6 @@ class SourceAdapter(ABC, Generic[T]):
                     uc.cdp.emulation.set_timezone_override(timezone_id=profile.timezone)
                 )
             except Exception:
-                # Timezone override is compatibility polish, not required to render.
                 pass
             await page.sleep(1.5)
             html = await page.get_content()
