@@ -7,16 +7,43 @@ from typing import Any
 from property_hunt.comps import select_comparables
 from property_hunt.config import HuntConfig, load_config
 from property_hunt.matching import group_duplicates, group_layouts
-from property_hunt.models import Listing, Observation, Transaction
+from property_hunt.models import (
+    AuctionRecord,
+    Listing,
+    MarketMetric,
+    Observation,
+    Project,
+    RegistryEntity,
+    RentalRecord,
+    Transaction,
+)
 from property_hunt.normalize import BuildingCanonicalizer
 from property_hunt.reporting import generate_report
 from property_hunt.scoring import score_listing
 from property_hunt.sources.bayut import BayutAdapter
-from property_hunt.sources.dld import DLDAdapter
+from property_hunt.sources.dld import DLDAdapter, DLDProjectAdapter, DLDRentAdapter
+from property_hunt.sources.dubai_pulse import (
+    DubaiPulseProjectsAdapter,
+    DubaiPulseRegistryAdapter,
+    DubaiPulseRentsAdapter,
+    DubaiPulseTransactionsAdapter,
+)
 from property_hunt.sources.dubizzle import DubizzleAdapter
+from property_hunt.sources.dxbinteract import DXBInteractAdapter
+from property_hunt.sources.emirates_auction import EmiratesAuctionAdapter
 from property_hunt.sources.propertyfinder import PropertyFinderAdapter
 from property_hunt.storage import append_events, detect_events, read_models, write_models
 from property_hunt.underwriting import underwrite
+
+
+def _empty_evidence() -> dict[str, list[Any]]:
+    return {
+        "rents": [],
+        "projects": [],
+        "auctions": [],
+        "market_metrics": [],
+        "registry": [],
+    }
 
 
 async def collect(
@@ -33,19 +60,28 @@ async def collect(
     wanted = sources or list(configured)
     listings: list[Listing] = []
     txns: list[Transaction] = []
+    evidence = _empty_evidence()
     diags = []
 
     if fixture_dir:
         fd = Path(fixture_dir)
         listings = PropertyFinderAdapter.parse((fd / "propertyfinder.html").read_bytes())
         txns = DLDAdapter.parse((fd / "dld.csv").read_bytes())
-        return listings, txns, diags
+        return listings, txns, evidence, diags
 
     adapters = {
         "propertyfinder": PropertyFinderAdapter,
         "bayut": BayutAdapter,
         "dubizzle": DubizzleAdapter,
         "dld": DLDAdapter,
+        "dld_rents": DLDRentAdapter,
+        "dld_projects": DLDProjectAdapter,
+        "dubai_pulse_transactions": DubaiPulseTransactionsAdapter,
+        "dubai_pulse_rents": DubaiPulseRentsAdapter,
+        "dubai_pulse_projects": DubaiPulseProjectsAdapter,
+        "dubai_pulse_registry": DubaiPulseRegistryAdapter,
+        "dxbinteract": DXBInteractAdapter,
+        "emirates_auction": EmiratesAuctionAdapter,
     }
 
     for name in wanted:
@@ -66,17 +102,29 @@ async def collect(
                 url=settings.get("url") or settings.get("start_url"),
                 allow_browser=allow_browser,
                 max_pages=int(settings.get("max_pages", 5)),
+                limit=int(settings.get("limit", 1000)),
+                entity_type=settings.get("entity_type"),
             )
         finally:
             await adapter.close()
 
         diags.extend(result.diagnostics)
-        if name == "dld":
+        if name in {"dld", "dubai_pulse_transactions"}:
             txns.extend(result.records)
+        elif name in {"dld_rents", "dubai_pulse_rents"}:
+            evidence["rents"].extend(result.records)
+        elif name in {"dld_projects", "dubai_pulse_projects"}:
+            evidence["projects"].extend(result.records)
+        elif name == "dubai_pulse_registry":
+            evidence["registry"].extend(result.records)
+        elif name == "dxbinteract":
+            evidence["market_metrics"].extend(result.records)
+        elif name == "emirates_auction":
+            evidence["auctions"].extend(result.records)
         else:
             listings.extend(result.records)
 
-    return listings, txns, diags
+    return listings, txns, evidence, diags
 
 
 def normalize_records(listings: list[Listing], txns: list[Transaction], cfg: HuntConfig):
@@ -125,12 +173,6 @@ def _observations(listings: list[Listing]) -> list[Observation]:
 
 
 def _historical_listing_valid(listing: Listing, cfg: HuntConfig) -> bool:
-    """Reject known category/search-page records accidentally persisted as listings.
-
-    Search-page observations are valid when deliberately parsed from rendered cards,
-    but a generic JSON-LD object whose URL is exactly the configured source landing
-    page is not a property listing.
-    """
     settings = cfg.sources.get(listing.source) or {}
     start_url = settings.get("start_url") or settings.get("url")
     provenance = listing.provenance
@@ -144,18 +186,20 @@ def _historical_listing_valid(listing: Listing, cfg: HuntConfig) -> bool:
 def _listing_snapshot_partial(listings: list[Listing], diags: list[Any]) -> bool:
     if listings:
         return False
-    listing_diags = [d for d in diags if d.source != "dld"]
+    listing_sources = {"propertyfinder", "bayut", "dubizzle"}
+    listing_diags = [d for d in diags if d.source in listing_sources]
     return bool(listing_diags) and any(d.partial for d in listing_diags)
 
 
 def _transaction_snapshot_partial(txns: list[Transaction], diags: list[Any], cfg: HuntConfig) -> bool:
     if txns:
         return False
-    dld_enabled = bool((cfg.sources.get("dld") or {}).get("enabled", False))
-    if not dld_enabled:
+    transaction_sources = {"dld", "dubai_pulse_transactions"}
+    enabled = any(bool((cfg.sources.get(name) or {}).get("enabled", False)) for name in transaction_sources)
+    if not enabled:
         return True
-    dld_diags = [d for d in diags if d.source == "dld"]
-    return bool(dld_diags) and any(d.partial for d in dld_diags)
+    source_diags = [d for d in diags if d.source in transaction_sources]
+    return bool(source_diags) and any(d.partial for d in source_diags)
 
 
 async def run_pipeline(
@@ -167,7 +211,9 @@ async def run_pipeline(
     allow_browser=False,
 ) -> dict[str, Any]:
     cfg = load_config(config_path)
-    listings, txns, diags = await collect(cfg, sources, fixture_dir, allow_browser)
+    listings, txns, source_evidence, diags = await collect(
+        cfg, sources, fixture_dir, allow_browser
+    )
     ambiguous = normalize_records(listings, txns, cfg)
 
     base = Path(output_dir)
@@ -196,6 +242,13 @@ async def run_pipeline(
 
     write_models(state / "listings.parquet", effective_listings, Listing)
     write_models(state / "transactions.parquet", effective_txns, Transaction)
+    write_models(state / "rents.parquet", source_evidence["rents"], RentalRecord)
+    write_models(state / "projects.parquet", source_evidence["projects"], Project)
+    write_models(state / "auctions.parquet", source_evidence["auctions"], AuctionRecord)
+    write_models(
+        state / "market_metrics.parquet", source_evidence["market_metrics"], MarketMetric
+    )
+    write_models(state / "registry.parquet", source_evidence["registry"], RegistryEntity)
     write_models(
         state / "observations.parquet",
         previous_observations + _observations(listings),
@@ -212,8 +265,6 @@ async def run_pipeline(
     candidates = []
     exclusions = {"bedrooms": 0, "all_in_ceiling": 0, "ambiguous_building": 0}
     for listing in listings:
-        # Placeholder rent assumption remains explicitly labelled until registered/live
-        # rental evidence is integrated into the source layer.
         uw = underwrite(listing, cfg, annual_rent=listing.price_aed * 0.06)
         all_in = uw.metrics["all_in_cost"] or 0
         if listing.bedrooms not in cfg.allowed_bedrooms:
@@ -269,6 +320,11 @@ async def run_pipeline(
             "state_listings": len(effective_listings),
             "transactions": len(txns),
             "state_transactions": len(effective_txns),
+            "rents": len(source_evidence["rents"]),
+            "projects": len(source_evidence["projects"]),
+            "auctions": len(source_evidence["auctions"]),
+            "market_metrics": len(source_evidence["market_metrics"]),
+            "registry_entities": len(source_evidence["registry"]),
             "ambiguous": len(ambiguous),
             "candidates": len(candidates),
             "events": len(events),
