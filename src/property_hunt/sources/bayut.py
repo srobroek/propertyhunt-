@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from urllib.parse import urljoin
-
 from property_hunt.models import Listing, SourceDiagnostic
 from .base import FetchResult, SourceAdapter, unsupported
 from .portal_common import extract_links, parse_jsonld_listing
@@ -32,7 +30,16 @@ class BayutAdapter(SourceAdapter[Listing]):
                 if self.challenge_detected(payload) and allow_browser:
                     payload = await self.browser_request(page_url)
                 if self.challenge_detected(payload):
-                    diagnostics.append(SourceDiagnostic(source=self.name,status="partial",message="access challenge detected",pages=page_number-1,records=len(records),partial=True))
+                    diagnostics.append(
+                        SourceDiagnostic(
+                            source=self.name,
+                            status="partial",
+                            message="access challenge detected",
+                            pages=page_number - 1,
+                            records=len(records),
+                            partial=True,
+                        )
+                    )
                     break
 
                 for listing in parse_jsonld_listing(payload, self.name, page_url):
@@ -42,16 +49,40 @@ class BayutAdapter(SourceAdapter[Listing]):
                 for detail_url in detail_links:
                     try:
                         detail = await self.request(detail_url)
-                        if not parse_jsonld_listing(detail, self.name, detail_url) and allow_browser:
+                        parsed = parse_jsonld_listing(detail, self.name, detail_url)
+                        if not parsed and allow_browser:
                             detail = await self.browser_request(detail_url)
-                        for listing in parse_jsonld_listing(detail, self.name, detail_url):
+                            parsed = parse_jsonld_listing(detail, self.name, detail_url)
+                        for listing in parsed:
                             records[listing.id] = listing
                     except Exception:
                         continue
             except Exception as exc:
-                diagnostics.append(SourceDiagnostic(source=self.name,status="partial",message=str(exc),pages=page_number-1,records=len(records),partial=True))
+                diagnostics.append(
+                    SourceDiagnostic(
+                        source=self.name,
+                        status="partial",
+                        message=str(exc),
+                        pages=page_number - 1,
+                        records=len(records),
+                        partial=True,
+                    )
+                )
                 break
 
         if not diagnostics:
-            diagnostics.append(SourceDiagnostic(source=self.name,status="ok" if records else "partial",message="public search/detail pages parsed",records=len(records),pages=max_pages,partial=not bool(records)))
-        return FetchResult(records=list(records.values()), diagnostics=diagnostics, complete=bool(records) and not any(d.partial for d in diagnostics))
+            diagnostics.append(
+                SourceDiagnostic(
+                    source=self.name,
+                    status="ok" if records else "partial",
+                    message="public search/detail pages parsed",
+                    records=len(records),
+                    pages=max_pages,
+                    partial=not bool(records),
+                )
+            )
+        return FetchResult(
+            records=list(records.values()),
+            diagnostics=diagnostics,
+            complete=bool(records) and not any(d.partial for d in diagnostics),
+        )
