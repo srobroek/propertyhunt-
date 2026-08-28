@@ -9,7 +9,7 @@ requires-python = ">=3.12"
 dependencies = ["pydantic==2.11.7", "PyYAML==6.0.2", "typer==0.16.0", "httpx==0.28.1", "pyarrow==20.0.0", "rapidfuzz==3.13.0"]
 [project.optional-dependencies]
 dev = ["pytest==8.4.1", "pytest-cov==6.2.1", "ruff==0.12.5", "mypy==1.17.0"]
-browser = ["playwright==1.54.0"]
+browser = ["nodriver==0.50.3", "playwright==1.54.0"]
 [project.scripts]
 property-hunt = "property_hunt.cli:app"
 [tool.hatch.build.targets.wheel]
