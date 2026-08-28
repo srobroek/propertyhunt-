@@ -43,6 +43,32 @@ def test_parsers():
     assert len(DLDAdapter.parse(Path("tests/fixtures/dld.csv").read_bytes())) == 2
 
 
+def test_propertyfinder_embedded_application_state():
+    payload = b'''<html><script type="application/json">{
+      "props": {"listings": [{
+        "id": "13695167",
+        "property_type": "Apartment",
+        "price": {"value": 1200000, "currency": "AED"},
+        "title": "Vacant | Mid Floor | Marina View",
+        "location": {"full_name": "Marina Pinnacle, Dubai Marina, Dubai"},
+        "bedrooms": "1",
+        "bathrooms": "2",
+        "size": {"value": 760, "unit": "sqft"},
+        "share_url": "https://www.propertyfinder.ae/en/plp/buy/apartment-for-sale-dubai-dubai-marina-marina-pinnacle-13695167.html"
+      }]}}
+    }</script></html>'''
+    records = PropertyFinderAdapter.parse(payload, "https://www.propertyfinder.ae/en/buy/dubai/properties-for-sale.html")
+    assert len(records) == 1
+    record = records[0]
+    assert record.source_id == "13695167"
+    assert record.price_aed == 1_200_000
+    assert record.area_sqft == 760
+    assert record.bedrooms == 1
+    assert record.building_name == "Marina Pinnacle"
+    assert record.community == "Dubai Marina"
+    assert record.provenance.method == "embedded-application-state"
+
+
 def test_normalization_and_ambiguity():
     c = BuildingCanonicalizer()
     assert normalize_name("Tôwer—One!") == "tower one"
