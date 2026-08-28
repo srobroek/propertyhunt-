@@ -77,7 +77,8 @@ def _structure(html: str, url: str) -> dict[str, object]:
             )
             if key in lower
         ],
-        "cloudflare_challenge": "performing security verification" in lower or "cf-turnstile-response" in html,
+        "cloudflare_challenge": "performing security verification" in lower
+        or "cf-turnstile-response" in html,
     }
 
 
@@ -113,7 +114,12 @@ async def _authenticate(tab, username: str, password: str) -> dict[str, object]:
 
     username_field = await _find_first(
         tab,
-        ["input[type=email]", "input[name*=email]", "input[name*=user]", "input[autocomplete=username]"],
+        [
+            "input[type=email]",
+            "input[name*=email]",
+            "input[name*=user]",
+            "input[autocomplete=username]",
+        ],
     )
     password_field = await _find_first(
         tab,
@@ -146,8 +152,18 @@ async def _authenticate(tab, username: str, password: str) -> dict[str, object]:
         and any(x in lower for x in ("logout", "log out", "my account", "profile"))
     )
     result["post_login_url"] = _safe_url(tab.url)
-    result["post_login_cloudflare"] = "cf-turnstile-response" in html or "performing security verification" in lower
+    result["post_login_cloudflare"] = (
+        "cf-turnstile-response" in html or "performing security verification" in lower
+    )
     return result
+
+
+def _write_probe(payload: dict[str, object]) -> None:
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    REPORT_COPY.parent.mkdir(parents=True, exist_ok=True)
+    rendered = json.dumps(payload, indent=2)
+    OUT.write_text(rendered, encoding="utf-8")
+    REPORT_COPY.write_text(rendered, encoding="utf-8")
 
 
 async def main() -> None:
@@ -159,20 +175,37 @@ async def main() -> None:
     username = os.getenv("DXBINTERACT_USERNAME")
     password = os.getenv("DXBINTERACT_PASSWORD")
     if not username or not password:
-        raise SystemExit("DXBINTERACT_USERNAME/PASSWORD secrets are not available")
+        _write_probe({"credentials_present": False, "status": "credentials-missing"})
+        print("DXB auth probe skipped: credentials unavailable")
+        return
 
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    REPORT_COPY.parent.mkdir(parents=True, exist_ok=True)
     chrome_bin = os.getenv("CHROME_BIN") or None
+    try:
+        browser = await uc.start(
+            headless=False,
+            browser_executable_path=chrome_bin,
+            browser_args=[
+                "--window-size=1920,1080",
+                "--disable-dev-shm-usage",
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+            ],
+            lang="en-US",
+            expert=False,
+            no_sandbox=True,
+        )
+    except Exception as exc:
+        _write_probe(
+            {
+                "credentials_present": True,
+                "engine": "nodriver",
+                "status": "browser-start-failed",
+                "error_type": type(exc).__name__,
+            }
+        )
+        print(f"DXB auth probe browser start failed: {type(exc).__name__}")
+        return
 
-    browser = await uc.start(
-        headless=False,
-        browser_executable_path=chrome_bin,
-        browser_args=["--window-size=1920,1080", "--disable-dev-shm-usage"],
-        lang="en-US",
-        expert=False,
-        no_sandbox=True,
-    )
     try:
         tab = await browser.get(PROBE_URLS[0])
         await tab.sleep(2)
@@ -192,13 +225,12 @@ async def main() -> None:
         payload = {
             "credentials_present": True,
             "engine": "nodriver",
+            "status": "completed",
             "before_login": before,
             "auth": auth,
             "pages": pages,
         }
-        rendered = json.dumps(payload, indent=2)
-        OUT.write_text(rendered, encoding="utf-8")
-        REPORT_COPY.write_text(rendered, encoding="utf-8")
+        _write_probe(payload)
         print(
             "DXB nodriver auth probe: "
             f"submitted={auth['submitted']} success_signal={auth['success_signal']} "
