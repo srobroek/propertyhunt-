@@ -1,0 +1,61 @@
+{
+  "run_id": "2026-08-28T13:39:06.881714+00:00",
+  "counts": {
+    "collected_listings": 1,
+    "transactions": 0,
+    "ambiguous": 0,
+    "candidates": 0,
+    "events": 1
+  },
+  "diagnostics": [
+    {
+      "source": "propertyfinder",
+      "status": "partial",
+      "message": "search challenged; published sitemap fallback used",
+      "records": 0,
+      "pages": 0,
+      "attempts": 0,
+      "partial": true,
+      "details": {
+        "sitemap_files": 1,
+        "sitemap_urls": 0,
+        "detail_attempts": 0,
+        "detail_challenges": 0
+      }
+    },
+    {
+      "source": "bayut",
+      "status": "partial",
+      "message": "access challenge detected",
+      "records": 0,
+      "pages": 0,
+      "attempts": 0,
+      "partial": true,
+      "details": {}
+    },
+    {
+      "source": "dubizzle",
+      "status": "ok",
+      "message": "public search/detail pages parsed",
+      "records": 1,
+      "pages": 1,
+      "attempts": 0,
+      "partial": false,
+      "details": {
+        "detail_links_seen": 0,
+        "detail_pages_parsed": 0,
+        "browser_index_pages": 1,
+        "search_cards_parsed": 0,
+        "rendered_aed_markers": 0,
+        "rendered_sqft_markers": 1
+      }
+    }
+  ],
+  "exclusions": {
+    "bedrooms": 0,
+    "all_in_ceiling": 1,
+    "ambiguous_building": 0
+  },
+  "candidates": [],
+  "warnings": []
+}
