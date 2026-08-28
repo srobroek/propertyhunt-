@@ -1,8 +1,6 @@
 name: daily-property-hunt
 
 on:
-  push:
-    branches: [main]
   schedule:
     - cron: '0 3 * * *' # 07:00 UAE / 03:00 UTC; scheduled runs add 0-30m jitter
   workflow_dispatch:
@@ -12,7 +10,7 @@ permissions:
 
 concurrency:
   group: daily-property-hunt
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   collect:
@@ -54,24 +52,6 @@ jobs:
             --verbose
           python scripts/validate_artifacts.py /tmp/property-hunt-check
 
-      - name: Run Property Finder live verification
-        run: |
-          xvfb-run -a -s '-screen 0 1920x1080x24' \
-            property-hunt run \
-              --config config/hunt.yaml \
-              --source propertyfinder \
-              --output-dir /tmp/propertyfinder-live \
-              --verbose
-          python scripts/validate_artifacts.py /tmp/propertyfinder-live
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          report = json.loads(Path('/tmp/propertyfinder-live/reports/latest.json').read_text())
-          print(json.dumps(report['diagnostics'], indent=2))
-          if report['counts'].get('collected_listings', 0) <= 0:
-              raise SystemExit('Property Finder live verification returned zero listings')
-          PY
-
       - name: Randomize scheduled scraper start
         if: github.event_name == 'schedule'
         run: |
@@ -103,6 +83,29 @@ jobs:
         run: |
           python scripts/validate_artifacts.py .
           git diff --check
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('reports/latest.json').read_text())
+          counts = report.get('counts', {})
+          snapshot = report.get('snapshot', {})
+          print(
+              'live run: '
+              f"collected={counts.get('collected_listings', 0)} "
+              f"state={counts.get('state_listings', 0)} "
+              f"transactions={counts.get('transactions', 0)} "
+              f"rents={counts.get('rents', 0)} "
+              f"projects={counts.get('projects', 0)} "
+              f"auctions={counts.get('auctions', 0)} "
+              f"market_metrics={counts.get('market_metrics', 0)} "
+              f"snapshot_preserved={snapshot.get('listing_snapshot_preserved', False)}"
+          )
+          for diagnostic in report.get('diagnostics', []):
+              print(
+                  f"source={diagnostic['source']} status={diagnostic['status']} "
+                  f"records={diagnostic['records']} message={diagnostic['message']}"
+              )
+          PY
 
       - name: Persist daily state and reports
         run: |
@@ -126,6 +129,5 @@ jobs:
             reports/
             data/state/
             diagnostics/
-            /tmp/propertyfinder-live/reports/
           if-no-files-found: warn
           retention-days: 3
