@@ -1,6 +1,8 @@
 name: daily-property-hunt
 
 on:
+  push:
+    branches: [rod-browser-backend]
   schedule:
     - cron: '0 3 * * *' # 07:00 UAE / 03:00 UTC
   workflow_dispatch:
