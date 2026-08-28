@@ -1,8 +1,6 @@
 name: daily-property-hunt
 
 on:
-  push:
-    branches: [main] # temporary verification trigger; remove after final successful run
   schedule:
     - cron: '0 3 * * *' # 07:00 UAE / 03:00 UTC
   workflow_dispatch:
@@ -12,7 +10,7 @@ permissions:
 
 concurrency:
   group: daily-property-hunt
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   collect:
