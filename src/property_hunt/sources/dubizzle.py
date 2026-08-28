@@ -29,6 +29,10 @@ def _plain_text(payload: bytes) -> str:
     return " ".join(text.replace("\xa0", " ").split())
 
 
+def _is_detail_url(url: str) -> bool:
+    return bool(re.search(DETAIL_PATTERN, url, flags=re.I))
+
+
 class DubizzleAdapter(SourceAdapter[Listing]):
     name = "dubizzle"
 
@@ -96,6 +100,8 @@ class DubizzleAdapter(SourceAdapter[Listing]):
 
     @staticmethod
     def parse_detail_html(payload: bytes, url: str) -> list[Listing]:
+        if not _is_detail_url(url):
+            return []
         raw = payload.decode("utf-8", errors="ignore")
         h1 = re.search(r"<h1\b[^>]*>(.*?)</h1>", raw, flags=re.I | re.S)
         title = ""
@@ -147,6 +153,7 @@ class DubizzleAdapter(SourceAdapter[Listing]):
         records: dict[str, Listing] = {}
         diagnostics: list[SourceDiagnostic] = []
         detail_links_seen = detail_pages_parsed = browser_index_pages = search_cards_parsed = 0
+        rejected_category_jsonld = 0
         rendered_aed_markers = rendered_sqft_markers = 0
 
         for page_number in range(1, max_pages + 1):
@@ -160,7 +167,9 @@ class DubizzleAdapter(SourceAdapter[Listing]):
                     diagnostics.append(SourceDiagnostic(source=self.name, status="partial", message="access challenge detected", pages=page_number - 1, records=len(records), partial=True))
                     break
 
-                index_records = parse_jsonld_listing(payload, self.name, page_url)
+                raw_index_records = parse_jsonld_listing(payload, self.name, page_url)
+                index_records = [x for x in raw_index_records if _is_detail_url(x.url)]
+                rejected_category_jsonld += len(raw_index_records) - len(index_records)
                 detail_links = extract_links(payload, page_url, (DETAIL_PATTERN,))
                 search_cards = self.parse_search_cards(payload, page_url)
                 if not index_records and not detail_links and not search_cards and allow_browser:
@@ -171,7 +180,9 @@ class DubizzleAdapter(SourceAdapter[Listing]):
                     rendered_sqft_markers += len(re.findall(r"\bsqft\b", rendered_text, re.I))
                     if not self.challenge_detected(rendered):
                         payload = rendered
-                        index_records = parse_jsonld_listing(payload, self.name, page_url)
+                        raw_index_records = parse_jsonld_listing(payload, self.name, page_url)
+                        index_records = [x for x in raw_index_records if _is_detail_url(x.url)]
+                        rejected_category_jsonld += len(raw_index_records) - len(index_records)
                         detail_links = extract_links(payload, page_url, (DETAIL_PATTERN,))
                         search_cards = self.parse_search_cards(payload, page_url)
 
@@ -183,10 +194,16 @@ class DubizzleAdapter(SourceAdapter[Listing]):
                 for detail_url in detail_links:
                     try:
                         detail = await self.request(detail_url)
-                        parsed = parse_jsonld_listing(detail, self.name, detail_url) or self.parse_detail_html(detail, detail_url)
+                        parsed = [
+                            x for x in parse_jsonld_listing(detail, self.name, detail_url)
+                            if _is_detail_url(x.url)
+                        ] or self.parse_detail_html(detail, detail_url)
                         if not parsed and allow_browser:
                             detail = await self.browser_request(detail_url)
-                            parsed = parse_jsonld_listing(detail, self.name, detail_url) or self.parse_detail_html(detail, detail_url)
+                            parsed = [
+                                x for x in parse_jsonld_listing(detail, self.name, detail_url)
+                                if _is_detail_url(x.url)
+                            ] or self.parse_detail_html(detail, detail_url)
                         if parsed:
                             detail_pages_parsed += 1
                         for listing in parsed:
@@ -194,9 +211,9 @@ class DubizzleAdapter(SourceAdapter[Listing]):
                     except Exception:
                         continue
             except Exception as exc:
-                diagnostics.append(SourceDiagnostic(source=self.name, status="partial", message=str(exc), pages=page_number - 1, records=len(records), partial=True, details={"detail_links_seen": detail_links_seen, "detail_pages_parsed": detail_pages_parsed, "browser_index_pages": browser_index_pages, "search_cards_parsed": search_cards_parsed, "rendered_aed_markers": rendered_aed_markers, "rendered_sqft_markers": rendered_sqft_markers}))
+                diagnostics.append(SourceDiagnostic(source=self.name, status="partial", message=str(exc), pages=page_number - 1, records=len(records), partial=True, details={"detail_links_seen": detail_links_seen, "detail_pages_parsed": detail_pages_parsed, "browser_index_pages": browser_index_pages, "search_cards_parsed": search_cards_parsed, "rejected_category_jsonld": rejected_category_jsonld, "rendered_aed_markers": rendered_aed_markers, "rendered_sqft_markers": rendered_sqft_markers}))
                 break
 
         if not diagnostics:
-            diagnostics.append(SourceDiagnostic(source=self.name, status="ok" if records else "partial", message="public search/detail pages parsed", records=len(records), pages=max_pages, partial=not bool(records), details={"detail_links_seen": detail_links_seen, "detail_pages_parsed": detail_pages_parsed, "browser_index_pages": browser_index_pages, "search_cards_parsed": search_cards_parsed, "rendered_aed_markers": rendered_aed_markers, "rendered_sqft_markers": rendered_sqft_markers}))
+            diagnostics.append(SourceDiagnostic(source=self.name, status="ok" if records else "partial", message="public search/detail pages parsed", records=len(records), pages=max_pages, partial=not bool(records), details={"detail_links_seen": detail_links_seen, "detail_pages_parsed": detail_pages_parsed, "browser_index_pages": browser_index_pages, "search_cards_parsed": search_cards_parsed, "rejected_category_jsonld": rejected_category_jsonld, "rendered_aed_markers": rendered_aed_markers, "rendered_sqft_markers": rendered_sqft_markers}))
         return FetchResult(records=list(records.values()), diagnostics=diagnostics, complete=bool(records) and not any(d.partial for d in diagnostics))
