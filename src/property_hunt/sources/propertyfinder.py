@@ -11,6 +11,7 @@ from .portal_common import extract_links, extract_sitemap_locs, parse_jsonld_lis
 
 
 SITEMAP_INDEX = "https://www.propertyfinder.ae/sitemaps/index-sitemap.xml"
+HTML_SITEMAP = "https://www.propertyfinder.ae/en/h-sitemap/buy/dubai"
 
 
 def _walk(value: Any) -> Iterable[dict[str, Any]]:
@@ -47,12 +48,7 @@ def _embedded_json_blocks(payload: bytes) -> Iterable[Any]:
 
 
 def parse_embedded_listings(payload: bytes, page_url: str) -> list[Listing]:
-    """Parse Property Finder listing objects embedded in application state.
-
-    Current PF search pages serialize listing objects with stable semantic fields
-    such as id/share_url/price/location/size. This path is intentionally independent
-    of CSS selectors and complements JSON-LD detail parsing.
-    """
+    """Parse Property Finder listing objects embedded in application state."""
     out: list[Listing] = []
     seen: set[str] = set()
     for data in _embedded_json_blocks(payload):
@@ -63,7 +59,9 @@ def parse_embedded_listings(payload: bytes, page_url: str) -> list[Listing]:
             if "propertyfinder.ae" not in share_url or "/plp/buy/" not in share_url:
                 continue
 
-            property_type = str(item.get("property_type") or item.get("propertyType") or "").lower()
+            property_type = str(
+                item.get("property_type") or item.get("propertyType") or ""
+            ).lower()
             if property_type and "apartment" not in property_type:
                 continue
 
@@ -82,7 +80,9 @@ def parse_embedded_listings(payload: bytes, page_url: str) -> list[Listing]:
             size = _number(item.get("size") or item.get("area"))
             bedrooms_raw = item.get("bedrooms")
             bathrooms_raw = item.get("bathrooms")
-            bedrooms = 0 if str(bedrooms_raw).lower() == "studio" else _number(bedrooms_raw)
+            bedrooms = (
+                0 if str(bedrooms_raw).lower() == "studio" else _number(bedrooms_raw)
+            )
             bathrooms = _number(bathrooms_raw)
             if price is None or size is None or bedrooms is None:
                 continue
@@ -148,11 +148,82 @@ class PropertyFinderAdapter(SourceAdapter[Listing]):
         query["page"] = str(page)
         return urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment))
 
+    async def _parse_search_url(
+        self,
+        search_url: str,
+        allow_browser: bool,
+    ) -> tuple[list[Listing], bool]:
+        """Fetch one PF search URL and return parsed listings plus challenge state."""
+        payload = await self.request(search_url)
+        parsed = self.parse(payload, search_url)
+        challenged = self.challenge_detected(payload)
+        if (challenged or not parsed) and allow_browser:
+            payload = await self.browser_request(search_url)
+            parsed = self.parse(payload, search_url)
+            challenged = self.challenge_detected(payload)
+        return parsed, challenged
+
+    async def _html_sitemap_fallback(
+        self,
+        allow_browser: bool,
+        target_records: int,
+        max_search_attempts: int = 24,
+    ) -> tuple[list[Listing], dict[str, int | str]]:
+        records: dict[str, Listing] = {}
+        details: dict[str, int | str] = {
+            "html_sitemap_links": 0,
+            "html_search_attempts": 0,
+            "html_search_challenges": 0,
+        }
+        try:
+            sitemap = await self.request(HTML_SITEMAP)
+            search_urls = extract_links(
+                sitemap,
+                HTML_SITEMAP,
+                (
+                    r"/en/buy/dubai/[^?#]*apartments-for-sale[^?#]*\.html",
+                    r"/en/buy/dubai/apartments-for-sale[^?#]*\.html",
+                ),
+            )
+            # Prefer 1BR/2BR and generic apartment searches because those align with
+            # the configured investment hunt and avoid wasting requests on 4BR+ stock.
+            preferred = [
+                url
+                for url in search_urls
+                if re.search(r"(?:1-bedroom|2-bedroom|apartments-for-sale)", url, re.I)
+            ]
+            ordered = list(dict.fromkeys([*preferred, *search_urls]))
+            details["html_sitemap_links"] = len(ordered)
+            for search_url in ordered[:max_search_attempts]:
+                if len(records) >= target_records:
+                    break
+                details["html_search_attempts"] = int(details["html_search_attempts"]) + 1
+                try:
+                    parsed, challenged = await self._parse_search_url(
+                        search_url, allow_browser
+                    )
+                    if challenged:
+                        details["html_search_challenges"] = (
+                            int(details["html_search_challenges"]) + 1
+                        )
+                        if int(details["html_search_challenges"]) >= 5:
+                            break
+                        continue
+                    for listing in parsed:
+                        if listing.bedrooms not in (1, 2):
+                            continue
+                        records[listing.id] = listing
+                except Exception:
+                    continue
+        except Exception as exc:
+            details["html_sitemap_error"] = str(exc)
+        return list(records.values()), details
+
     async def _sitemap_fallback(
         self, allow_browser: bool, target_records: int = 50
     ) -> tuple[list[Listing], dict]:
         records: dict[str, Listing] = {}
-        details = {
+        details: dict[str, Any] = {
             "sitemap_files": 0,
             "sitemap_urls": 0,
             "detail_attempts": 0,
@@ -161,7 +232,6 @@ class PropertyFinderAdapter(SourceAdapter[Listing]):
         try:
             index = await self.request(SITEMAP_INDEX)
             child_maps = extract_sitemap_locs(index)
-            # Be permissive about PF sitemap naming: names have changed over time.
             likely_buy_maps = [u for u in child_maps if "buy" in u.lower()] or child_maps
             for child in likely_buy_maps[:8]:
                 urls = extract_sitemap_locs(await self.request(child))
@@ -185,7 +255,7 @@ class PropertyFinderAdapter(SourceAdapter[Listing]):
                                 continue
                             parsed = self.parse(payload, detail_url)
                         for listing in parsed:
-                            if listing.property_type.lower() != "apartment" and "apartment" not in listing.title.lower():
+                            if listing.bedrooms not in (1, 2):
                                 continue
                             records[listing.id] = listing
                     except Exception:
@@ -194,6 +264,14 @@ class PropertyFinderAdapter(SourceAdapter[Listing]):
                     break
         except Exception as exc:
             details["sitemap_error"] = str(exc)
+
+        if len(records) < target_records:
+            html_records, html_details = await self._html_sitemap_fallback(
+                allow_browser,
+                target_records=target_records - len(records),
+            )
+            records.update((record.id, record) for record in html_records)
+            details.update(html_details)
         return list(records.values()), details
 
     async def fetch(self, **kwargs: object) -> FetchResult[Listing]:
@@ -209,26 +287,14 @@ class PropertyFinderAdapter(SourceAdapter[Listing]):
         for page_number in range(1, max_pages + 1):
             page_url = self._page_url(str(start_url), page_number)
             try:
-                payload = await self.request(page_url)
-                parsed_index = self.parse(payload, page_url)
-                if (not parsed_index or self.challenge_detected(payload)) and allow_browser:
-                    payload = await self.browser_request(page_url)
-                    parsed_index = self.parse(payload, page_url)
-                if self.challenge_detected(payload):
-                    challenged = True
+                parsed_index, page_challenged = await self._parse_search_url(
+                    page_url, allow_browser
+                )
+                challenged = challenged or page_challenged
+                if page_challenged:
                     break
                 for listing in parsed_index:
                     records[listing.id] = listing
-                for detail_url in extract_links(
-                    payload, page_url, (r"/en/plp/(?:buy|rent)/[^?#]+",)
-                ):
-                    try:
-                        detail = await self.request(detail_url)
-                        parsed = self.parse(detail, detail_url)
-                        for listing in parsed:
-                            records[listing.id] = listing
-                    except Exception:
-                        continue
             except Exception as exc:
                 diagnostics.append(
                     SourceDiagnostic(
@@ -243,16 +309,16 @@ class PropertyFinderAdapter(SourceAdapter[Listing]):
                 break
 
         sitemap_details = {}
-        if not records and challenged:
+        if not records:
             sitemap_records, sitemap_details = await self._sitemap_fallback(allow_browser)
             records.update((x.id, x) for x in sitemap_records)
 
         if not diagnostics:
             status = "ok" if records else "partial"
             message = (
-                "public search/detail pages parsed"
-                if records and not challenged
-                else "search challenged; published sitemap fallback used"
+                "Property Finder listings parsed"
+                if records
+                else "search challenged or empty; XML and HTML sitemap fallbacks yielded no listings"
             )
             diagnostics.append(
                 SourceDiagnostic(
