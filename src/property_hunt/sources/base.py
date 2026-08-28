@@ -89,28 +89,29 @@ class SourceAdapter(ABC, Generic[T]):
         await self.client.aclose()
 
     async def _rod_request(self, url: str) -> bytes | None:
-        """Use the bundled Rod helper when it is available.
-
-        Rod drives a normal Chromium instance with the configured browser user
-        agent, language, and viewport. It is used for JavaScript rendering and
-        normal browser compatibility only; challenge pages are still surfaced
-        to the adapter and are not solved or bypassed.
-        """
+        """Use the bundled Rod helper when it is available."""
         rod_bin = Path(os.getenv("PROPERTY_HUNT_ROD_BIN", "bin/rod-fetch"))
         if not rod_bin.is_file():
             return None
 
-        proc = await asyncio.create_subprocess_exec(
+        args = [
             str(rod_bin),
             "--url",
             url,
             "--user-agent",
             self.policy.user_agent,
+        ]
+        chrome_bin = os.getenv("CHROME_BIN")
+        if chrome_bin:
+            args.extend(["--chrome-bin", chrome_bin])
+
+        proc = await asyncio.create_subprocess_exec(
+            *args,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
         try:
-            stdout, stderr = await asyncio.wait_for(
+            stdout, _stderr = await asyncio.wait_for(
                 proc.communicate(), timeout=self.policy.browser_timeout_seconds + 15
             )
         except TimeoutError:
@@ -119,17 +120,11 @@ class SourceAdapter(ABC, Generic[T]):
             return None
 
         if proc.returncode != 0 or not stdout:
-            _ = stderr
             return None
         return stdout
 
     async def browser_request(self, url: str) -> bytes:
-        """Fetch rendered public HTML, preferring Rod and falling back to Playwright.
-
-        Neither backend solves CAPTCHAs, bypasses authentication, or defeats an
-        explicit access-control challenge. Such responses are detected by the
-        source adapter and reported as partial-source diagnostics.
-        """
+        """Fetch rendered public HTML, preferring Rod and falling back to Playwright."""
         rendered = await self._rod_request(url)
         if rendered is not None:
             return rendered
@@ -138,12 +133,15 @@ class SourceAdapter(ABC, Generic[T]):
             from playwright.async_api import async_playwright
         except ImportError as exc:
             raise RuntimeError(
-                "browser fallback requires Rod (`bin/rod-fetch`) or: "
-                "pip install 'property-hunt[browser]' && playwright install chromium"
+                "browser fallback requires Rod (`bin/rod-fetch`) or property-hunt[browser]"
             ) from exc
 
         async with async_playwright() as playwright:
-            browser = await playwright.chromium.launch(headless=True)
+            launch_kwargs: dict[str, object] = {"headless": True}
+            chrome_bin = os.getenv("CHROME_BIN")
+            if chrome_bin:
+                launch_kwargs["executable_path"] = chrome_bin
+            browser = await playwright.chromium.launch(**launch_kwargs)
             context = await browser.new_context(
                 user_agent=self.policy.user_agent,
                 locale="en-US",
