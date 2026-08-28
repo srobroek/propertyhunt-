@@ -20,9 +20,9 @@
 - **propertyfinder** — partial: search challenged; published sitemap fallback used (0 records)
 - **bayut** — partial: search challenged; published detail sitemap fallback yielded no records (0 records)
 - **dubizzle** — partial: public search/detail pages parsed (0 records)
-- **dld** — partial: official DLD transaction CSV parsed (0 records)
-- **dld_rents** — partial: registered rent data parsed (0 records)
-- **dld_projects** — partial: DLD project data parsed (0 records)
+- **dld** — query-gated: official DLD transaction page reachable; current rows require the public date/CAPTCHA query or an export/API URL (0 records)
+- **dld_rents** — query-gated: official DLD rent page reachable; current Ejari rows require the public date/CAPTCHA query or an export/API URL (0 records)
+- **dld_projects** — query-gated: official DLD project-status page reachable; project records require a project-name/number query or official export (0 records)
 - **dxbinteract** — ok: public DXBinteract market report parsed (1 records)
 - **emirates_auction** — partial: public Emirates Auction property inventory parsed (0 records)
 

@@ -1,5 +1,5 @@
 {
-  "run_id": "2026-08-28T14:46:32.384237+00:00",
+  "run_id": "2026-08-28T14:52:32.713789+00:00",
   "counts": {
     "collected_listings": 0,
     "state_listings": 4,
@@ -70,33 +70,45 @@
     },
     {
       "source": "dld",
-      "status": "partial",
-      "message": "official DLD transaction CSV parsed",
+      "status": "query-gated",
+      "message": "official DLD transaction page reachable; current rows require the public date/CAPTCHA query or an export/API URL",
       "records": 0,
       "pages": 1,
       "attempts": 1,
       "partial": true,
-      "details": {}
+      "details": {
+        "url": "https://dubailand.gov.ae/en/open-data/real-estate-data/",
+        "reachable": true,
+        "requires_query": true
+      }
     },
     {
       "source": "dld_rents",
-      "status": "partial",
-      "message": "registered rent data parsed",
+      "status": "query-gated",
+      "message": "official DLD rent page reachable; current Ejari rows require the public date/CAPTCHA query or an export/API URL",
       "records": 0,
       "pages": 1,
       "attempts": 1,
       "partial": true,
-      "details": {}
+      "details": {
+        "url": "https://dubailand.gov.ae/en/open-data/real-estate-data/",
+        "reachable": true,
+        "requires_query": true
+      }
     },
     {
       "source": "dld_projects",
-      "status": "partial",
-      "message": "DLD project data parsed",
+      "status": "query-gated",
+      "message": "official DLD project-status page reachable; project records require a project-name/number query or official export",
       "records": 0,
       "pages": 1,
       "attempts": 1,
       "partial": true,
-      "details": {}
+      "details": {
+        "url": "https://backoffice.dubailand.gov.ae/en/eservices/real-estate-project-status-landing/real-estate-project-status",
+        "reachable": true,
+        "requires_query": true
+      }
     },
     {
       "source": "dxbinteract",

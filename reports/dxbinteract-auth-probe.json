@@ -1,0 +1,113 @@
+{
+  "credentials_present": true,
+  "before_login": {
+    "url": "https://dxbinteract.com/area-analysis/al-karama",
+    "title": "Just a moment...",
+    "headings": [
+      "dxbinteract.com",
+      "Performing security verification",
+      "Verification successful. Waiting for dxbinteract.com to respond"
+    ],
+    "inputs": [
+      {
+        "type": "hidden",
+        "name": "cf-turnstile-response",
+        "id": "cf-chl-widget-b55vw_response",
+        "placeholder": null,
+        "autocomplete": null
+      }
+    ],
+    "table_headers": [],
+    "buttons": [],
+    "links": [
+      "Cloudflare",
+      "Privacy"
+    ],
+    "keywords_seen": []
+  },
+  "auth": {
+    "login_entry_clicked": false,
+    "username_field_found": false,
+    "password_field_found": false,
+    "submitted": false,
+    "success_signal": false,
+    "post_login_url": "https://dxbinteract.com/area-analysis/al-karama"
+  },
+  "pages": [
+    {
+      "url": "https://dxbinteract.com/area-analysis/al-karama",
+      "title": "Just a moment...",
+      "headings": [
+        "dxbinteract.com",
+        "Performing security verification",
+        "Verification successful. Waiting for dxbinteract.com to respond"
+      ],
+      "inputs": [
+        {
+          "type": "hidden",
+          "name": "cf-turnstile-response",
+          "id": "cf-chl-widget-ss8x3_response",
+          "placeholder": null,
+          "autocomplete": null
+        }
+      ],
+      "table_headers": [],
+      "buttons": [],
+      "links": [
+        "Cloudflare",
+        "Privacy"
+      ],
+      "keywords_seen": []
+    },
+    {
+      "url": "https://dxbinteract.com/dubai-property-prices",
+      "title": "Just a moment...",
+      "headings": [
+        "dxbinteract.com",
+        "Performing security verification",
+        "Verification successful. Waiting for dxbinteract.com to respond"
+      ],
+      "inputs": [
+        {
+          "type": "hidden",
+          "name": "cf-turnstile-response",
+          "id": "cf-chl-widget-x4h1b_response",
+          "placeholder": null,
+          "autocomplete": null
+        }
+      ],
+      "table_headers": [],
+      "buttons": [],
+      "links": [
+        "Cloudflare",
+        "Privacy"
+      ],
+      "keywords_seen": []
+    },
+    {
+      "url": "https://dxbinteract.com/interactive-price-change",
+      "title": "Just a moment...",
+      "headings": [
+        "dxbinteract.com",
+        "Performing security verification",
+        "Verification successful. Waiting for dxbinteract.com to respond"
+      ],
+      "inputs": [
+        {
+          "type": "hidden",
+          "name": "cf-turnstile-response",
+          "id": "cf-chl-widget-7ruvw_response",
+          "placeholder": null,
+          "autocomplete": null
+        }
+      ],
+      "table_headers": [],
+      "buttons": [],
+      "links": [
+        "Cloudflare",
+        "Privacy"
+      ],
+      "keywords_seen": []
+    }
+  ]
+}
