@@ -1,83 +1,101 @@
-# Prompt for the daily Codex scheduled task
+# Prompt for the daily Codex Automation
 
-Copy the text between the horizontal rules into the scheduled Codex task. Set
-its working directory to the repository root and schedule it for **07:00 GST
-(03:00 UTC)**. The task is intentionally responsible for both collection and
-analysis; the GitHub Actions schedule remains a deterministic fixture check.
+Use the text below for a **Codex Automation**, with this repository as its working repository. Schedule for **07:00 Gulf Standard Time (03:00 UTC)** unless a different collection time is desired.
+
+GitHub Actions is not the scheduler. The automation itself performs collection, analysis, validation, and Git-backed persistence.
 
 ---
 
-Work in the property-hunt repository and execute today's UAE residential
-property collection and analysis end to end.
+Work in the `srobroek/propertyhunt-` repository and execute today's UAE residential property collection and investment analysis end to end.
 
-1. Read `AGENTS.md` files (if any), `README.md`,
-   `docs/codex-daily-runbook.md`, `docs/source-status.md`, and
-   `config/hunt.yaml`. Check `git status` before changing anything. Preserve
-   unrelated user changes.
-2. Use Python 3.12. Create or reuse `.venv`, install the pinned project with
-   `python -m pip install -e '.[dev,browser]'`, and install Playwright Chromium
-   if it is not already present. Never invent a GitHub token or print secrets.
-3. Before live access, run:
+1. Read `AGENTS.md` files if present, `README.md`, `docs/codex-daily-runbook.md`, `docs/source-status.md`, and `config/hunt.yaml`. Check `git status` before changing anything and preserve unrelated changes.
+
+2. Use Python 3.12. Create or reuse `.venv`, then install:
+
+   ```bash
+   python -m pip install -e '.[dev,browser]'
+   playwright install --with-deps chromium
+   ```
+
+3. Run deterministic validation before live access:
 
    ```bash
    ruff check src tests scripts
-   mypy src
    pytest --cov=property_hunt --cov-report=term-missing
-   property-hunt run --config config/hunt.yaml --fixture-dir tests/fixtures \
-     --output-dir /tmp/property-hunt-check --no-browser --verbose
+   property-hunt run --config config/hunt.yaml --fixture-dir tests/fixtures --output-dir /tmp/property-hunt-check --no-browser --verbose
    python scripts/validate_artifacts.py /tmp/property-hunt-check
    ```
 
-   Stop and report the exact failing command if deterministic validation
-   fails. Do not replace a failed test with an assertion-free smoke test.
-4. Reconfirm that each live URL is public, permitted by the current source
-   terms and robots policy, and represented accurately in
-   `docs/source-status.md`. Do not bypass authentication, CAPTCHA, paywalls,
-   rate limits, bot challenges, or other access controls. Do not use stealth or
-   fingerprint-evasion plugins. If a source is no longer permissible or its
-   schema changed, retain a structured partial/unsupported diagnostic and
-   continue with the other sources; never fabricate records.
-5. Generate today's live data and analysis with direct HTTP first:
+   If any deterministic validation fails, stop the live run and report the exact failure. Strict mypy is a development target, not a production gate until the remaining original helpers are fully annotated.
+
+4. Run the live collector:
 
    ```bash
-   property-hunt run --config config/hunt.yaml --output-dir . --no-browser --verbose
+   property-hunt run --config config/hunt.yaml --output-dir . --verbose
    ```
 
-   If an approved public page genuinely requires JavaScript, rerun only the
-   affected configured source without `--no-browser`, using the built-in
-   rate-limited Playwright fallback. A configured URL is required for a live
-   source. Do not silently treat fixture data as live data.
-6. Run `python scripts/validate_artifacts.py .`. Inspect
-   `reports/latest.json` and `reports/latest.md`: verify timestamps and counts,
-   source outcomes, exclusions, ambiguous buildings, duplicate conflicts,
-   comparable inclusion/exclusion reasons, underwriting assumptions, and score
-   derivations. Explicitly call out an empty or partial live result; it is not a
-   successful market-data refresh merely because the process exited zero.
-7. Confirm that the only generated changes are intended derived artifacts in
-   `data/state/` and `reports/`. Never commit raw responses, browser profiles,
-   cookies, credentials, or debug HTML. Run `git diff --check` and rerun tests
-   affected by any code or parser repair.
-8. If and only if validation succeeded and live artifacts contain honestly
-   labelled source outcomes, commit the intended code/documentation/data/report
-   changes with a dated message. Push the current branch only when an existing
-   authenticated remote is configured. Do not create credentials, rewrite
-   history, force-push, or push directly to a protected branch. If repository
-   instructions require a pull request, create it with the available repository
-   tool after committing.
-9. Finish with a Markdown summary containing: collection time; per-source
-   record count and complete/partial/unsupported status; candidate and event
-   counts; top candidates with warnings (not investment advice); changed file
-   paths; commit and PR/push result; and every executed check prefixed with
-   `✅`, `⚠️`, or `❌`. Distinguish environment limitations from code failures.
+   Collection policy:
+   - use direct HTTP first;
+   - use Playwright for public pages that require JavaScript rendering;
+   - use normal browser configuration and retries to reduce false bot detections;
+   - do not automate CAPTCHA solving or bypass authentication/access controls;
+   - when a source remains challenged, mark it partial and continue;
+   - never fabricate records.
+
+5. Inspect `reports/latest.json`. Treat source completeness as part of the result, not merely a diagnostic. If Property Finder, Bayut, or Dubizzle returns an implausibly low count relative to recent runs, investigate parser/source regressions before accepting the refresh.
+
+6. The official current-year DLD export may remain disabled because its public form uses interactive CAPTCHA. For the strongest candidates, use public transaction evidence available through DLD-derived sources, Property Finder transaction pages, DXBinteract, and other credible sources to verify same-layout/same-building sale evidence. Clearly distinguish this agent-level research from records produced by the deterministic DLD adapter.
+
+7. Analyse the candidate set as an investment underwriting exercise. Prioritize:
+   - asking price and AED/sqft;
+   - recent same-layout and same-building transactions;
+   - discount/premium to credible comparables;
+   - listing age, reductions, relistings, vacancy and duplicate-agent competition;
+   - realistic long-term unfurnished and furnished rents;
+   - STR only where genuinely supportable;
+   - service charges, maintenance, vacancy and management costs;
+   - net operating yield;
+   - 3.99% / 25-year financing economics;
+   - transaction and rental liquidity;
+   - layout quality;
+   - competing supply;
+   - off-plan construction progress and realistic income-start date;
+   - resale optionality.
+
+8. For serious candidates calculate downside/base/upside scenarios and classify each as strong buy, attractive at a lower price, fair value, weak opportunity, or reject. State the maximum compelling purchase price, primary buy reason, primary reason not to buy, and largest unresolved diligence item.
+
+9. Validate generated artifacts:
+
+   ```bash
+   python scripts/validate_artifacts.py .
+   git diff --check
+   git status --short
+   ```
+
+10. Persist successful state to GitHub. Stage only intended files under `data/`, `reports/`, and any necessary parser/code/documentation repairs. Do not commit secrets, cookies, raw browser profiles, CAPTCHA material, or debug HTML.
+
+   ```bash
+   git add data reports
+   git add <any intentionally repaired code/docs>
+   git commit -m "property hunt: $(date -u +%F)"
+   git pull --rebase origin main
+   git push origin HEAD:main
+   ```
+
+   Never force-push. If `main` cannot be updated safely, push a branch and report the conflict instead.
+
+11. Return a compact daily report containing:
+   - collection timestamp;
+   - per-source status and record counts;
+   - new/removed/reduced/relisted listing counts;
+   - top ranked candidates;
+   - transaction evidence for finalists;
+   - LT unfurnished / LT furnished / STR underwriting where applicable;
+   - financing-adjusted cash flow;
+   - downside/base/upside return scenarios;
+   - source/data-quality warnings;
+   - commit SHA containing today's persisted state.
+
+Put the investable conclusion first. Do not treat portal asking prices as market value.
 
 ---
-
-## Required local setup
-
-Before enabling the schedule, an operator must place permission-reviewed live
-URLs in a **local** configuration or update the checked-in configuration after
-review. The repository deliberately ships with null live URLs, so an unchanged
-checkout can validate fixtures but cannot produce a genuine live market
-refresh. Authentication, when legitimately required by an official data
-provider, must be injected by the task runner's secret store rather than YAML.
-

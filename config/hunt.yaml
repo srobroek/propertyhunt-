@@ -1,16 +1,44 @@
 sources:
-  propertyfinder: {enabled: true, mode: html, start_url: null}
-  bayut: {enabled: true, mode: unsupported}
-  dubizzle: {enabled: true, mode: unsupported}
-  dld: {enabled: true, mode: csv, url: null}
-  dxbinteract: {enabled: true, mode: unsupported}
-  emirates_auction: {enabled: true, mode: unsupported}
-http: {timeout_seconds: 20, retries: 3, backoff_seconds: 0.5, rate_limit_per_second: 1, user_agent: "property-hunt/0.2 (+local research; contact repository owner)", browser_timeout_seconds: 30}
+  propertyfinder:
+    enabled: true
+    mode: http-browser
+    start_url: https://www.propertyfinder.ae/en/buy/dubai/apartments-for-sale.html
+    max_pages: 10
+  bayut:
+    enabled: true
+    mode: http-browser
+    start_url: https://www.bayut.com/for-sale/apartments/dubai/
+    max_pages: 10
+  dubizzle:
+    enabled: true
+    mode: http-browser
+    start_url: https://dubai.dubizzle.com/en/property-for-sale/residential/apartment/
+    max_pages: 10
+  dld:
+    enabled: false
+    mode: csv
+    url: null
+    note: Current-year official export requires interactive form/captcha; enable when an approved export URL or file is supplied.
+  dxbinteract:
+    enabled: false
+    mode: unsupported
+  emirates_auction:
+    enabled: false
+    mode: unsupported
+
+http:
+  timeout_seconds: 20
+  retries: 3
+  backoff_seconds: 0.5
+  rate_limit_per_second: 1
+  user_agent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/140 Safari/537.36 property-hunt/0.2"
+  browser_timeout_seconds: 30
+
 canonicalization: {fuzzy_threshold: 92, ambiguity_margin: 4}
 layouts: {absolute_area_sqft: 75, percentage_area: 0.06}
 comp_windows_days: [30, 90, 180, 365]
 acquisition: {transfer_fee_pct: 0.04, agent_fee_pct: 0.02, mortgage_registration_pct: 0.0025, trustee_fee_aed: 4200, valuation_fee_aed: 3000}
-financing: {down_payment_pct: 0.25, annual_interest_rate: 0.045, term_years: 25, loan_fee_pct: 0.01}
+financing: {down_payment_pct: 0.25, annual_interest_rate: 0.0399, term_years: 25, loan_fee_pct: 0.01}
 rental: {vacancy_pct: 0.08, maintenance_pct: 0.05, service_charge_aed_sqft: 15, str_management_fee: 0.17}
 scoring_weights: {valuation: 0.45, distress: 0.20, investment: 0.35}
 thresholds: {minimum_comp_count: 2, candidate_score: 55, distress_discount_pct: 0.10}
