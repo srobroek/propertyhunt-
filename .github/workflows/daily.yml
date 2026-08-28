@@ -31,7 +31,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '1.23.x'
-          cache: true
+          cache: false
 
       - name: Install project and browser dependencies
         run: |
@@ -42,7 +42,7 @@ jobs:
       - name: Build Rod browser helper
         run: |
           mkdir -p bin
-          go mod download
+          go mod tidy
           go build -o bin/rod-fetch ./tools/rod-fetch
           CHROME_BIN="$(python - <<'PY'
           from playwright.sync_api import sync_playwright
