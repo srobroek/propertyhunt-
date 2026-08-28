@@ -1,10 +1,15 @@
 {
-  "run_id": "2026-08-28T13:52:47.794213+00:00",
+  "run_id": "2026-08-28T14:21:45.362660+00:00",
   "counts": {
     "collected_listings": 0,
     "state_listings": 4,
     "transactions": 0,
     "state_transactions": 0,
+    "rents": 0,
+    "projects": 0,
+    "auctions": 0,
+    "market_metrics": 0,
+    "registry_entities": 0,
     "ambiguous": 0,
     "candidates": 0,
     "events": 0
@@ -61,6 +66,29 @@
         "rejected_category_jsonld": 1,
         "rendered_aed_markers": 0,
         "rendered_sqft_markers": 0
+      }
+    },
+    {
+      "source": "dxbinteract",
+      "status": "partial",
+      "message": "dxbinteract request failed after bounded retries: Client error '403 Forbidden' for url 'https://dxbinteract.com/market-reports/2026/Q2'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "records": 0,
+      "pages": 0,
+      "attempts": 0,
+      "partial": true,
+      "details": {}
+    },
+    {
+      "source": "emirates_auction",
+      "status": "partial",
+      "message": "public Emirates Auction property inventory parsed",
+      "records": 0,
+      "pages": 1,
+      "attempts": 0,
+      "partial": true,
+      "details": {
+        "detail_links": 0,
+        "dubai_only": true
       }
     }
   ],
