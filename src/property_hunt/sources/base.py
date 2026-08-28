@@ -18,57 +18,46 @@ T = TypeVar("T")
 
 
 @dataclass(frozen=True)
-class BrowserProfile:
+class BrowserFingerprint:
     name: str
+    os: str
+    user_agent_family: str
+    user_agent: str
+    platform: str
     languages: tuple[str, ...]
     timezone: str
-    window_width: int
-    window_height: int
-    browser_class: str = "desktop"
+    screen_width: int
+    screen_height: int
+    color_depth: int
+    hardware_concurrency: int
+    device_memory_gb: int
+    max_touch_points: int
+    webdriver: bool
+    gpu_class: str
+    browser_class: str
 
 
-REALISTIC_PROFILE = BrowserProfile(
-    BrowserFingerprint(
-
-        name="Windows desktop",
-
-        os="Windows 11",
-
-        user_agent_family="Chrome/Chromium Windows",
-
-        user_agent=(
-
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-
-            "Chrome/151.0.0.0 Safari/537.36"
-
-        ),
-
-        platform="Win32",
-
-        languages=("en-US", "en"),
-
-        timezone="America/New_York",
-
-        screen_width=1920,
-
-        screen_height=1080,
-
-        color_depth=24,
-
-        hardware_concurrency=8,
-
-        device_memory_gb=16,
-
-        max_touch_points=0,
-
-        webdriver=False,
-
-        gpu_class="desktop GPU",
-
-        browser_class="desktop",
+REALISTIC_PROFILE = BrowserFingerprint(
+    name="Windows desktop",
+    os="Windows 11",
+    user_agent_family="Chrome/Chromium Windows",
+    user_agent=(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/151.0.0.0 Safari/537.36"
+    ),
+    platform="Win32",
+    languages=("en-US", "en"),
+    timezone="America/New_York",
+    screen_width=1920,
+    screen_height=1080,
+    color_depth=24,
+    hardware_concurrency=8,
+    device_memory_gb=16,
+    max_touch_points=0,
+    webdriver=False,
+    gpu_class="desktop GPU",
+    browser_class="desktop",
 )
 
 
@@ -163,7 +152,7 @@ class SourceAdapter(ABC, Generic[T]):
         if self._nodriver_browser is None:
             chrome_bin = os.getenv("CHROME_BIN") or None
             browser_args = [
-                f"--window-size={profile.window_width},{profile.window_height}",
+                f"--window-size={profile.screen_width},{profile.screen_height}",
                 "--disable-dev-shm-usage",
             ]
             try:
@@ -213,7 +202,7 @@ class SourceAdapter(ABC, Generic[T]):
             context = await browser.new_context(
                 locale=profile.languages[0],
                 timezone_id=profile.timezone,
-                viewport={"width": profile.window_width, "height": profile.window_height},
+                viewport={"width": profile.screen_width, "height": profile.screen_height},
             )
             page = await context.new_page()
             try:
