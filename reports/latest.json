@@ -1,5 +1,5 @@
 {
-  "run_id": "2026-08-30T09:06:09.120885+00:00",
+  "run_id": "2026-08-31T09:18:08.434256+00:00",
   "counts": {
     "collected_listings": 0,
     "state_listings": 4,
@@ -32,8 +32,8 @@
         "sitemap_urls": 0,
         "detail_attempts": 0,
         "detail_challenges": 0,
-        "html_sitemap_links": 192,
-        "html_search_attempts": 5,
+        "html_sitemap_links": 193,
+        "html_search_attempts": 6,
         "html_search_challenges": 5
       }
     },
