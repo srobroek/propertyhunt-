@@ -1,5 +1,5 @@
 {
-  "run_id": "2026-09-01T08:24:05.628672+00:00",
+  "run_id": "2026-09-02T07:48:02.963841+00:00",
   "counts": {
     "collected_listings": 0,
     "state_listings": 4,
@@ -32,7 +32,7 @@
         "sitemap_urls": 0,
         "detail_attempts": 0,
         "detail_challenges": 0,
-        "html_sitemap_links": 195,
+        "html_sitemap_links": 192,
         "html_search_attempts": 5,
         "html_search_challenges": 5
       }
@@ -66,7 +66,7 @@
         "detail_pages_parsed": 0,
         "browser_index_pages": 1,
         "search_cards_parsed": 0,
-        "rejected_category_jsonld": 1,
+        "rejected_category_jsonld": 0,
         "rendered_aed_markers": 0,
         "rendered_sqft_markers": 0
       }
