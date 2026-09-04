@@ -1,6 +1,1630 @@
 {
   "credentials_present": true,
   "engine": "nodriver",
-  "status": "browser-start-failed",
-  "error_type": "Exception"
+  "status": "completed",
+  "before_login": {
+    "url": "://",
+    "title": "Dubai Real Estate Prices &amp; Transaction History \u2013 DXBInteract",
+    "headings": [
+      "Property History",
+      "Property transactions history",
+      "1506 Apartment",
+      "Property History",
+      "Explore Property Prices by Beds",
+      "Use DXB Interact data inside Claude",
+      "Use DXB Interact data inside Claude",
+      "Get Early Access to DXB Advanced",
+      "Terms &amp; Conditions",
+      "Property Information"
+    ],
+    "inputs": [
+      {
+        "type": "hidden",
+        "name": "p_flow_id",
+        "id": "pFlowId",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "p_flow_step_id",
+        "id": "pFlowStepId",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "p_instance",
+        "id": "pInstance",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "p_page_submission_id",
+        "id": "pPageSubmissionId",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "p_request",
+        "id": "pRequest",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "p_reload_on_submit",
+        "id": "pReloadOnSubmit",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": "pContext",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": "pSalt",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "P0_CURRENT_YEAR",
+        "id": "P0_CURRENT_YEAR",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "P0_YTD_YEAR",
+        "id": "P0_YTD_YEAR",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "P0_YTD_COMPARE",
+        "id": "P0_YTD_COMPARE",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "P0_LOGIN_URL",
+        "id": "P0_LOGIN_URL",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "P0_CHANNEL",
+        "id": "P0_CHANNEL",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "P0_CURRENCY_VALUE",
+        "id": "P0_CURRENCY_VALUE",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "search",
+        "name": null,
+        "id": "SearchInput",
+        "placeholder": "Search and select area",
+        "autocomplete": "off"
+      },
+      {
+        "type": "text",
+        "name": "P142_PROP_NO",
+        "id": "P142_PROP_NO",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "P142_PATH_NAME",
+        "id": "P142_PATH_NAME",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "P142_LOCATION_ID",
+        "id": "P142_LOCATION_ID",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "P142_PROP_ID",
+        "id": "P142_PROP_ID",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "P142_DLD_ID",
+        "id": "P142_DLD_ID",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "P142_EJARI_ID",
+        "id": "P142_EJARI_ID",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "P142_DLD_EJARI_ID",
+        "id": "P142_DLD_EJARI_ID",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "P142_SEARCH_LOG_ID",
+        "id": "P142_SEARCH_LOG_ID",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "P142_BLUR",
+        "id": "P142_BLUR",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "P142_URL",
+        "id": "P142_URL",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "P142_COORD",
+        "id": "P142_COORD",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "P0_METRIC_SYMBOL",
+        "id": "P0_METRIC_SYMBOL",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "G_USER_AUTH",
+        "id": "G_USER_AUTH",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "G_USER_NAME",
+        "id": "G_USER_NAME",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "G_USER_IMAGE",
+        "id": "G_USER_IMAGE",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "G_USER_EMAIL",
+        "id": "G_USER_EMAIL",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "G_USER_TITLE",
+        "id": "G_USER_TITLE",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "G_USER_MOBILE",
+        "id": "G_USER_MOBILE",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "G_USER_COMPANY",
+        "id": "G_USER_COMPANY",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "G_COMPANY_LOGO",
+        "id": "G_COMPANY_LOGO",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "G_USER_ROLE",
+        "id": "G_USER_ROLE",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "_GL",
+        "id": "_GL",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "P0_SOURCE",
+        "id": "P0_SOURCE",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "text",
+        "name": "P0_SIGNUP_EMAIL",
+        "id": "P0_SIGNUP_EMAIL",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "text",
+        "name": "P0_SIGNUP_MOBILE",
+        "id": "P0_SIGNUP_MOBILE",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "text",
+        "name": "P0_SIGNUP_NAME",
+        "id": "P0_SIGNUP_NAME",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "P0_SIGNUP_MOBILE_CODE",
+        "id": "P0_SIGNUP_MOBILE_CODE",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": null,
+        "name": null,
+        "id": "dxbMcpUrl",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": "pPageFormRegionChecksums",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": "pPageItemsRowVersion",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": null,
+        "id": "pPageItemsProtected",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "text",
+        "name": "P0_EMAIL_POP",
+        "id": "P0_EMAIL_POP",
+        "placeholder": "Enter your email...",
+        "autocomplete": null
+      },
+      {
+        "type": "text",
+        "name": "P0_MOBILE_POP",
+        "id": "P0_MOBILE_POP",
+        "placeholder": "Enter your mobile number...",
+        "autocomplete": null
+      },
+      {
+        "type": "hidden",
+        "name": "P0_AGREEMENT",
+        "id": "P0_AGREEMENT_HIDDENVALUE",
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "checkbox",
+        "name": null,
+        "id": "P0_AGREEMENT",
+        "placeholder": null,
+        "autocomplete": null
+      }
+    ],
+    "table_headers": [],
+    "keywords_seen": [
+      "transaction"
+    ],
+    "cloudflare_challenge": false
+  },
+  "auth": {
+    "login_entry_found": true,
+    "username_field_found": false,
+    "password_field_found": false,
+    "submitted": false,
+    "success_signal": false,
+    "post_login_url": "https://dxbinteract.com/dubai-property-prices",
+    "post_login_cloudflare": false
+  },
+  "pages": [
+    {
+      "url": "://",
+      "title": "Dubai Real Estate Prices &amp; Transaction History \u2013 DXBInteract",
+      "headings": [
+        "Property History",
+        "Property transactions history",
+        "1506 Apartment",
+        "Property History",
+        "Explore Property Prices by Beds",
+        "Use DXB Interact data inside Claude",
+        "Use DXB Interact data inside Claude",
+        "Get Early Access to DXB Advanced",
+        "Terms &amp; Conditions",
+        "Property Information"
+      ],
+      "inputs": [
+        {
+          "type": "hidden",
+          "name": "p_flow_id",
+          "id": "pFlowId",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "p_flow_step_id",
+          "id": "pFlowStepId",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "p_instance",
+          "id": "pInstance",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "p_page_submission_id",
+          "id": "pPageSubmissionId",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "p_request",
+          "id": "pRequest",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "p_reload_on_submit",
+          "id": "pReloadOnSubmit",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": "pContext",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": "pSalt",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P0_CURRENT_YEAR",
+          "id": "P0_CURRENT_YEAR",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P0_YTD_YEAR",
+          "id": "P0_YTD_YEAR",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P0_YTD_COMPARE",
+          "id": "P0_YTD_COMPARE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P0_LOGIN_URL",
+          "id": "P0_LOGIN_URL",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P0_CHANNEL",
+          "id": "P0_CHANNEL",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P0_CURRENCY_VALUE",
+          "id": "P0_CURRENCY_VALUE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "search",
+          "name": null,
+          "id": "SearchInput",
+          "placeholder": "Search and select area",
+          "autocomplete": "off"
+        },
+        {
+          "type": "text",
+          "name": "P142_PROP_NO",
+          "id": "P142_PROP_NO",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P142_PATH_NAME",
+          "id": "P142_PATH_NAME",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P142_LOCATION_ID",
+          "id": "P142_LOCATION_ID",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P142_PROP_ID",
+          "id": "P142_PROP_ID",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P142_DLD_ID",
+          "id": "P142_DLD_ID",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P142_EJARI_ID",
+          "id": "P142_EJARI_ID",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P142_DLD_EJARI_ID",
+          "id": "P142_DLD_EJARI_ID",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P142_SEARCH_LOG_ID",
+          "id": "P142_SEARCH_LOG_ID",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P142_BLUR",
+          "id": "P142_BLUR",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P142_URL",
+          "id": "P142_URL",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P142_COORD",
+          "id": "P142_COORD",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P0_METRIC_SYMBOL",
+          "id": "P0_METRIC_SYMBOL",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "G_USER_AUTH",
+          "id": "G_USER_AUTH",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "G_USER_NAME",
+          "id": "G_USER_NAME",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "G_USER_IMAGE",
+          "id": "G_USER_IMAGE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "G_USER_EMAIL",
+          "id": "G_USER_EMAIL",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "G_USER_TITLE",
+          "id": "G_USER_TITLE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "G_USER_MOBILE",
+          "id": "G_USER_MOBILE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "G_USER_COMPANY",
+          "id": "G_USER_COMPANY",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "G_COMPANY_LOGO",
+          "id": "G_COMPANY_LOGO",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "G_USER_ROLE",
+          "id": "G_USER_ROLE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "_GL",
+          "id": "_GL",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P0_SOURCE",
+          "id": "P0_SOURCE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "text",
+          "name": "P0_SIGNUP_EMAIL",
+          "id": "P0_SIGNUP_EMAIL",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "text",
+          "name": "P0_SIGNUP_MOBILE",
+          "id": "P0_SIGNUP_MOBILE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "text",
+          "name": "P0_SIGNUP_NAME",
+          "id": "P0_SIGNUP_NAME",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P0_SIGNUP_MOBILE_CODE",
+          "id": "P0_SIGNUP_MOBILE_CODE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": null,
+          "name": null,
+          "id": "dxbMcpUrl",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": "pPageFormRegionChecksums",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": "pPageItemsRowVersion",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": "pPageItemsProtected",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "text",
+          "name": "P0_EMAIL_POP",
+          "id": "P0_EMAIL_POP",
+          "placeholder": "Enter your email...",
+          "autocomplete": null
+        },
+        {
+          "type": "text",
+          "name": "P0_MOBILE_POP",
+          "id": "P0_MOBILE_POP",
+          "placeholder": "Enter your mobile number...",
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P0_AGREEMENT",
+          "id": "P0_AGREEMENT_HIDDENVALUE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "checkbox",
+          "name": null,
+          "id": "P0_AGREEMENT",
+          "placeholder": null,
+          "autocomplete": null
+        }
+      ],
+      "table_headers": [],
+      "keywords_seen": [
+        "transaction"
+      ],
+      "cloudflare_challenge": false
+    },
+    {
+      "url": "://",
+      "title": "Sorry, this page isn't available",
+      "headings": [
+        "Sorry, this page isn't available"
+      ],
+      "inputs": [],
+      "table_headers": [],
+      "keywords_seen": [],
+      "cloudflare_challenge": false
+    },
+    {
+      "url": "https://dxbinteract.com/projects/api-barsha-residential-tower",
+      "title": "Api - Barsha Residential Tower, Al Barsha First market analysis &amp; prices 2025",
+      "headings": [
+        "Projects Analysis",
+        "Api - Barsha Residential Tower, Al Barsha First - 2026",
+        "Sales and Rent Performance",
+        "Number of units per bed",
+        "Number of Units per Bed",
+        "335 Total units Unit Size 597 to 3,900 sqft Median Price AED 1,830 /sqft Transactions 31 sales",
+        "62 1 Bed Unit Size 836 to 1,271 sqft Median Price /sqft Transactions",
+        "190 2 Beds Unit Size 1,240 to 2,071 sqft Median Price AED 1,940 /sqft Transactions 15 sales",
+        "76 3 Beds Unit Size 1,838 to 3,900 sqft Median Price AED 1,690 /sqft Transactions 16 sales",
+        "7 Commercial Unit Size 597 to 3,128 sqft Median Price /sqft Transactions",
+        "Sales timeline trend v1",
+        "Sales Timeline Trend",
+        "Rent timeline trend org",
+        "Rent Timeline Trend",
+        "Rented units per bed",
+        "Rented Units Per Bed",
+        "Analysis",
+        "Monthly Bedroom-Wise Price Comparison",
+        "Project sales history",
+        "Project Sales History",
+        "Project rent history",
+        "Project Rent History",
+        "Explore Property Prices by Beds",
+        "Use DXB Interact data inside Claude",
+        "Use DXB Interact data inside Claude"
+      ],
+      "inputs": [
+        {
+          "type": "hidden",
+          "name": "p_flow_id",
+          "id": "pFlowId",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "p_flow_step_id",
+          "id": "pFlowStepId",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "p_instance",
+          "id": "pInstance",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "p_page_submission_id",
+          "id": "pPageSubmissionId",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "p_request",
+          "id": "pRequest",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "p_reload_on_submit",
+          "id": "pReloadOnSubmit",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": "pContext",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": "pSalt",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P0_CURRENT_YEAR",
+          "id": "P0_CURRENT_YEAR",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P0_YTD_YEAR",
+          "id": "P0_YTD_YEAR",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P0_YTD_COMPARE",
+          "id": "P0_YTD_COMPARE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P0_LOGIN_URL",
+          "id": "P0_LOGIN_URL",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P0_CHANNEL",
+          "id": "P0_CHANNEL",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P0_CURRENCY_VALUE",
+          "id": "P0_CURRENCY_VALUE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P0_METRIC_SYMBOL",
+          "id": "P0_METRIC_SYMBOL",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "G_USER_AUTH",
+          "id": "G_USER_AUTH",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "G_USER_NAME",
+          "id": "G_USER_NAME",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "G_USER_IMAGE",
+          "id": "G_USER_IMAGE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P143_PROJECT_TITLE",
+          "id": "P143_PROJECT_TITLE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "G_USER_EMAIL",
+          "id": "G_USER_EMAIL",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "G_USER_TITLE",
+          "id": "G_USER_TITLE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "G_USER_MOBILE",
+          "id": "G_USER_MOBILE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "G_USER_COMPANY",
+          "id": "G_USER_COMPANY",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "G_COMPANY_LOGO",
+          "id": "G_COMPANY_LOGO",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "G_USER_ROLE",
+          "id": "G_USER_ROLE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "_GL",
+          "id": "_GL",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "text",
+          "name": "P0_EMAIL_POP",
+          "id": "P0_EMAIL_POP",
+          "placeholder": "Enter your email...",
+          "autocomplete": null
+        },
+        {
+          "type": "text",
+          "name": "P0_MOBILE_POP",
+          "id": "P0_MOBILE_POP",
+          "placeholder": "Enter your mobile number...",
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P0_AGREEMENT",
+          "id": "P0_AGREEMENT_HIDDENVALUE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "checkbox",
+          "name": null,
+          "id": "P0_AGREEMENT",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P143_IS_AUTH",
+          "id": "P143_IS_AUTH",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P0_SOURCE",
+          "id": "P0_SOURCE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P143_PROJECT",
+          "id": "P143_PROJECT_HIDDENVALUE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "text",
+          "name": null,
+          "id": "P143_PROJECT",
+          "placeholder": "Search by projects or areas",
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P143_AREA_ID",
+          "id": "P143_AREA_ID",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P143_PROJECT_ID",
+          "id": "P143_PROJECT_ID",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "radio",
+          "name": "P143_DATE_RANGE",
+          "id": "P143_DATE_RANGE_0",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "radio",
+          "name": "P143_DATE_RANGE",
+          "id": "P143_DATE_RANGE_1",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "radio",
+          "name": "P143_DATE_RANGE",
+          "id": "P143_DATE_RANGE_2",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "radio",
+          "name": "P143_DATE_RANGE",
+          "id": "P143_DATE_RANGE_3",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "radio",
+          "name": "P143_DATE_RANGE",
+          "id": "P143_DATE_RANGE_4",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "radio",
+          "name": "P143_DATE_RANGE",
+          "id": "P143_DATE_RANGE_5",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "radio",
+          "name": "P143_RANGE_MOBILE",
+          "id": "P143_RANGE_MOBILE_0",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "radio",
+          "name": "P143_RANGE_MOBILE",
+          "id": "P143_RANGE_MOBILE_1",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "radio",
+          "name": "P143_RANGE_MOBILE",
+          "id": "P143_RANGE_MOBILE_2",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "radio",
+          "name": "P143_RANGE_MOBILE",
+          "id": "P143_RANGE_MOBILE_3",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "radio",
+          "name": "P143_RANGE_MOBILE",
+          "id": "P143_RANGE_MOBILE_4",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "radio",
+          "name": "P143_RANGE_MOBILE",
+          "id": "P143_RANGE_MOBILE_5",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "radio",
+          "name": "P143_RANGE_MOBILE",
+          "id": "P143_RANGE_MOBILE_6",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "text",
+          "name": "P0_SIGNUP_EMAIL",
+          "id": "P0_SIGNUP_EMAIL",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "text",
+          "name": "P0_SIGNUP_MOBILE",
+          "id": "P0_SIGNUP_MOBILE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "text",
+          "name": "P0_SIGNUP_NAME",
+          "id": "P0_SIGNUP_NAME",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": "P0_SIGNUP_MOBILE_CODE",
+          "id": "P0_SIGNUP_MOBILE_CODE",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": null,
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": null,
+          "name": null,
+          "id": "dxbMcpUrl",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": "pPageFormRegionChecksums",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": "pPageItemsRowVersion",
+          "placeholder": null,
+          "autocomplete": null
+        },
+        {
+          "type": "hidden",
+          "name": null,
+          "id": "pPageItemsProtected",
+          "placeholder": null,
+          "autocomplete": null
+        }
+      ],
+      "table_headers": [],
+      "keywords_seen": [
+        "rental"
+      ],
+      "cloudflare_challenge": false
+    }
+  ]
 }
