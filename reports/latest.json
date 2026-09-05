@@ -1,5 +1,5 @@
 {
-  "run_id": "2026-09-04T08:02:08.069241+00:00",
+  "run_id": "2026-09-05T07:47:06.216426+00:00",
   "counts": {
     "collected_listings": 0,
     "state_listings": 4,
@@ -32,7 +32,7 @@
         "sitemap_urls": 0,
         "detail_attempts": 0,
         "detail_challenges": 0,
-        "html_sitemap_links": 193,
+        "html_sitemap_links": 190,
         "html_search_attempts": 5,
         "html_search_challenges": 5
       }
@@ -40,18 +40,12 @@
     {
       "source": "bayut",
       "status": "partial",
-      "message": "search challenged; published detail sitemap fallback yielded no records",
+      "message": "bayut request failed after bounded retries: Server error '503 Service Temporarily Unavailable' for url 'https://www.bayut.com/for-sale/apartments/dubai/'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503",
       "records": 0,
       "pages": 0,
       "attempts": 0,
       "partial": true,
-      "details": {
-        "sitemap_files": 1,
-        "sitemap_urls": 49000,
-        "detail_attempts": 3,
-        "detail_challenges": 3,
-        "non_dubai_rejected": 0
-      }
+      "details": {}
     },
     {
       "source": "dubizzle",
@@ -66,7 +60,7 @@
         "detail_pages_parsed": 0,
         "browser_index_pages": 1,
         "search_cards_parsed": 0,
-        "rejected_category_jsonld": 1,
+        "rejected_category_jsonld": 0,
         "rendered_aed_markers": 0,
         "rendered_sqft_markers": 0
       }
