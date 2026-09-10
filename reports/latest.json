@@ -1,5 +1,5 @@
 {
-  "run_id": "2026-09-09T07:47:09.708134+00:00",
+  "run_id": "2026-09-10T07:53:15.805693+00:00",
   "counts": {
     "collected_listings": 0,
     "state_listings": 4,
@@ -8,7 +8,7 @@
     "rents": 0,
     "projects": 0,
     "auctions": 0,
-    "market_metrics": 1,
+    "market_metrics": 0,
     "registry_entities": 0,
     "ambiguous": 0,
     "candidates": 0,
@@ -32,7 +32,7 @@
         "sitemap_urls": 0,
         "detail_attempts": 0,
         "detail_challenges": 0,
-        "html_sitemap_links": 196,
+        "html_sitemap_links": 190,
         "html_search_attempts": 5,
         "html_search_challenges": 5
       }
@@ -60,7 +60,7 @@
         "detail_pages_parsed": 0,
         "browser_index_pages": 1,
         "search_cards_parsed": 0,
-        "rejected_category_jsonld": 0,
+        "rejected_category_jsonld": 1,
         "rendered_aed_markers": 0,
         "rendered_sqft_markers": 0
       }
@@ -109,12 +109,12 @@
     },
     {
       "source": "dxbinteract",
-      "status": "ok",
-      "message": "public DXBinteract market report parsed",
-      "records": 1,
+      "status": "partial",
+      "message": "dxbinteract request failed after bounded retries: Client error '403 Forbidden' for url 'https://dxbinteract.com/market-reports/2026/Q2'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "records": 0,
       "pages": 1,
       "attempts": 2,
-      "partial": false,
+      "partial": true,
       "details": {
         "role": "secondary aggregate market evidence",
         "url": "https://dxbinteract.com/market-reports/2026/Q2"
