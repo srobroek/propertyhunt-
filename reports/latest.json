@@ -1,5 +1,5 @@
 {
-  "run_id": "2026-09-12T07:47:06.900266+00:00",
+  "run_id": "2026-09-13T08:12:55.093386+00:00",
   "counts": {
     "collected_listings": 0,
     "state_listings": 4,
@@ -60,7 +60,7 @@
         "detail_pages_parsed": 0,
         "browser_index_pages": 1,
         "search_cards_parsed": 0,
-        "rejected_category_jsonld": 0,
+        "rejected_category_jsonld": 1,
         "rendered_aed_markers": 0,
         "rendered_sqft_markers": 0
       }
